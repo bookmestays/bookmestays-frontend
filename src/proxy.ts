@@ -2,8 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Subdomain routing: admin.<domain>/x → /admin/x, partner.<domain>/x → /partner/x.
 // In local development just open http://localhost:3000/admin or /partner directly.
-const ADMIN_HOST = process.env.ADMIN_HOST ?? "admin.bookmestays.com";
-const PARTNER_HOST = process.env.PARTNER_HOST ?? "partner.bookmestays.com";
+const ADMIN_HOST = process.env.ADMIN_HOST ?? "admin.bookmestays.in";
+const PARTNER_HOST = process.env.PARTNER_HOST ?? "partner.bookmestays.in";
 
 export function proxy(request: NextRequest) {
   const host = request.headers.get("host")?.split(":")[0] ?? "";

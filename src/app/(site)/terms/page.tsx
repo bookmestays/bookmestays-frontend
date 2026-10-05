@@ -17,7 +17,7 @@ export default function TermsPage() {
         { title: "4. Cancellations and refunds", body: <p>Each rate has its own cancellation policy, shown before you pay and in your confirmation. See our <Link href="/cancellation-policy">Cancellation policy</Link> and <Link href="/refund-policy">Refund policy</Link>.</p> },
         { title: "5. Your responsibilities", body: <ul><li>Provide accurate guest details.</li><li>Carry valid photo ID for all adult guests at check-in.</li><li>Follow the property&apos;s house rules.</li></ul> },
         { title: "6. Liability", body: <p>Properties are responsible for the services they provide. BookMeStays is not liable for events outside its reasonable control, to the extent permitted by law.</p> },
-        { title: "7. Contact", body: <p>Questions? Write to <a href="mailto:support@bookmestays.com">support@bookmestays.com</a>.</p> },
+        { title: "7. Contact", body: <p>Questions? Write to <a href="mailto:bookmestaysupport@gmail.com">bookmestaysupport@gmail.com</a>.</p> },
       ]}
     />
   );

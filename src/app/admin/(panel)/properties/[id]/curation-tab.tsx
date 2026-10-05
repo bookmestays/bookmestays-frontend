@@ -59,7 +59,7 @@ export function CurationTab({ property, onUpdated }: { property: PartnerProperty
       </Section>
       <Section title="URL & SEO">
         <div className="space-y-4">
-          <Field label="URL slug" error={slugErr} hint={`bookmestays.com/stays/${s.slug || "…"} — changing it breaks old links`}>
+          <Field label="URL slug" error={slugErr} hint={`bookmestays.in/stays/${s.slug || "…"} — changing it breaks old links`}>
             <Input value={s.slug} onChange={(e) => setS({ ...s, slug: e.target.value.toLowerCase().replace(/\s+/g, "-") })} aria-invalid={!!slugErr} className="font-mono" />
           </Field>
           <SeoFields seo={s.seo} onChange={(seo) => setS({ ...s, seo })} ownerType="PROPERTY" ownerId={property.id} />

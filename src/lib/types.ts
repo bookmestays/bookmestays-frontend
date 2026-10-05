@@ -566,7 +566,7 @@ export type ChannelProviderInfo = {
   label: string;
   inboundConfigured: boolean;
   outboundConfigured: boolean;
-  inboundEndpoint: string; // e.g. https://api.bookmestays.com/channel/staah/ota
+  inboundEndpoint: string; // e.g. https://api.bookmestays.in/channel/staah/ota
 };
 export type ChannelConnection = {
   id: string;

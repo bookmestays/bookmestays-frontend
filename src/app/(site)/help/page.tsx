@@ -41,7 +41,7 @@ export default async function HelpPage() {
           title: "Booking support",
           body: (
             <p>
-              Need help with a booking? Contact us at <a href={`mailto:${support.email || "support@bookmestays.com"}`}>{support.email || "support@bookmestays.com"}</a>
+              Need help with a booking? Contact us at <a href={`mailto:${support.email || "bookmestaysupport@gmail.com"}`}>{support.email || "bookmestaysupport@gmail.com"}</a>
               {support.phone ? (
                 <>
                   {" "}

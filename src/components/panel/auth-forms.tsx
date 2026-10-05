@@ -91,7 +91,7 @@ export function LoginForm({ portal }: { portal: Portal }) {
           <Lock className="size-4" /> Sign in
         </Button>
       </form>
-      {portal === "partner" && <p className="mt-5 text-center text-xs text-muted">Don&apos;t have an account? Partner accounts are created by the BookMeStays team — contact partners@bookmestays.com.</p>}
+      {portal === "partner" && <p className="mt-5 text-center text-xs text-muted">Don&apos;t have an account? Partner accounts are created by the BookMeStays team — contact bookmestaysupport@gmail.com.</p>}
     </AuthCard>
   );
 }

@@ -23,7 +23,7 @@ export default async function ContactPage() {
                 </li>
               )}
               <li className="!ml-0 flex items-center gap-2">
-                <Mail className="size-4" aria-hidden /> <a href={`mailto:${support.email || "support@bookmestays.com"}`}>{support.email || "support@bookmestays.com"}</a>
+                <Mail className="size-4" aria-hidden /> <a href={`mailto:${support.email || "bookmestaysupport@gmail.com"}`}>{support.email || "bookmestaysupport@gmail.com"}</a>
               </li>
               {support.whatsapp && (
                 <li className="!ml-0 flex items-center gap-2">

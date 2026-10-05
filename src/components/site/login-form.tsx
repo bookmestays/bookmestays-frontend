@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, KeyRound, Smartphone } from "lucide-react";
+import { ArrowLeft, KeyRound, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Button, Field, Input } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
@@ -18,7 +18,7 @@ function normaliseTarget(v: string) {
   const digits = t.replace(/[^\d+]/g, "");
   return /^\d{10}$/.test(digits) ? `+91${digits}` : digits;
 }
-const isValidTarget = (t: string) => /^\S+@\S+\.\S+$/.test(t) || /^\+?\d{10,14}$/.test(t);
+const isValidEmail = (t: string) => /^\S+@\S+\.\S+$/.test(t);
 
 export function LoginForm({
   onSuccess,
@@ -37,7 +37,7 @@ export function LoginForm({
         <div role="tablist" aria-label="Sign-in method" className="grid grid-cols-2 gap-1 rounded-lg bg-surface-2 p-1 text-sm">
           {(
             [
-              ["otp", "One-time code", Smartphone],
+              ["otp", "Email code", Mail],
               ["password", "Password", KeyRound],
             ] as const
           ).map(([m, label, Icon]) => (
@@ -103,21 +103,18 @@ function OtpForm({ onSuccess }: { onSuccess: (u: User) => void }) {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [devCode, setDevCode] = useState<string | null>(null);
 
   async function request(e?: FormEvent) {
     e?.preventDefault();
-    const t = normaliseTarget(target);
-    if (!isValidTarget(t)) {
-      setError("Enter a valid mobile number or email address.");
+    const t = target.trim().toLowerCase();
+    if (!isValidEmail(t)) {
+      setError("Enter a valid email address.");
       return;
     }
     setBusy(true);
     setError(null);
     try {
-      const res = await api<{ sent: boolean; target: string; devCode?: string }>("/auth/otp/request", { method: "POST", body: { target: t } });
-      setDevCode(res.devCode ?? null);
-      if (res.devCode) setCode(res.devCode);
+      await api<{ sent: boolean; target: string }>("/auth/otp/request", { method: "POST", body: { target: t } });
       setStep("verify");
     } catch (err) {
       setError(errMsg(err));
@@ -129,7 +126,7 @@ function OtpForm({ onSuccess }: { onSuccess: (u: User) => void }) {
   async function verify(e: FormEvent) {
     e.preventDefault();
     if (!/^\d{4,8}$/.test(code.trim())) {
-      setError("Enter the code we sent you.");
+      setError("Enter the code we emailed you.");
       return;
     }
     setBusy(true);
@@ -137,7 +134,7 @@ function OtpForm({ onSuccess }: { onSuccess: (u: User) => void }) {
     try {
       const res = await api<AuthResponse>("/auth/otp/verify", {
         method: "POST",
-        body: { target: normaliseTarget(target), code: code.trim(), name: name.trim() || undefined },
+        body: { target: target.trim().toLowerCase(), code: code.trim(), name: name.trim() || undefined },
       });
       onSuccess(res.user);
     } catch (err) {
@@ -150,12 +147,13 @@ function OtpForm({ onSuccess }: { onSuccess: (u: User) => void }) {
   if (step === "request") {
     return (
       <form onSubmit={request} className="flex flex-col gap-4" noValidate>
-        <Field label="Mobile number or email" error={error}>
+        <Field label="Email address" hint="We'll email you a 6-digit code." error={error}>
           <Input
             autoFocus
+            type="email"
             inputMode="email"
-            autoComplete="username"
-            placeholder="98765 43210 or you@example.com"
+            autoComplete="email"
+            placeholder="you@example.com"
             value={target}
             onChange={(e) => setTarget(e.target.value)}
             aria-invalid={!!error}
@@ -171,13 +169,9 @@ function OtpForm({ onSuccess }: { onSuccess: (u: User) => void }) {
   return (
     <form onSubmit={verify} className="flex flex-col gap-4" noValidate>
       <button type="button" onClick={() => setStep("request")} className="inline-flex items-center gap-1 self-start text-sm text-muted hover:text-ink">
-        <ArrowLeft className="size-4" aria-hidden /> {normaliseTarget(target)}
+        <ArrowLeft className="size-4" aria-hidden /> {target.trim().toLowerCase()}
       </button>
-      {devCode && (
-        <p className="rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning">
-          Development mode: code <strong>{devCode}</strong> has been filled in for you.
-        </p>
-      )}
+      <p className="text-sm text-muted">We&apos;ve emailed a 6-digit code to you. Check your spam folder if it doesn&apos;t arrive.</p>
       <Field label="Verification code" error={error}>
         <Input
           autoFocus
@@ -255,7 +249,7 @@ function SignupForm({ onSuccess }: { onSuccess: (u: User) => void }) {
   async function submit(e: FormEvent) {
     e.preventDefault();
     if (form.name.trim().length < 2) return setError("Please enter your name.");
-    if (!/^\S+@\S+\.\S+$/.test(form.email.trim())) return setError("Please enter a valid email address.");
+    if (!isValidEmail(form.email.trim())) return setError("Please enter a valid email address.");
     if (form.password.length < 8) return setError("Password must be at least 8 characters.");
     setBusy(true);
     setError(null);
