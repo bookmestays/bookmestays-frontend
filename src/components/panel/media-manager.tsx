@@ -30,6 +30,7 @@ export function MediaManager({
   allowCover = true,
   readOnly = false,
   minImages,
+  minVideos,
   title,
 }: {
   ownerType: MediaOwnerType;
@@ -40,6 +41,7 @@ export function MediaManager({
   allowCover?: boolean;
   readOnly?: boolean;
   minImages?: number;
+  minVideos?: number;
   title?: string;
 }) {
   const toast = useToast();
@@ -131,6 +133,7 @@ export function MediaManager({
   };
 
   const imageCount = items.filter((m) => m.kind === "IMAGE").length;
+  const videoCount = items.filter((m) => m.kind === "VIDEO").length;
   const accept = [...(kinds.includes("IMAGE") ? ["image/jpeg", "image/png", "image/webp", "image/avif"] : []), ...(kinds.includes("VIDEO") ? ["video/mp4", "video/quicktime", "video/webm"] : [])].join(",");
 
   return (
@@ -211,6 +214,11 @@ export function MediaManager({
       {minImages && imageCount < minImages && (
         <p className="text-xs text-warning">
           Add at least {minImages} photos ({imageCount} so far).
+        </p>
+      )}
+      {minVideos && videoCount < minVideos && (
+        <p className="text-xs text-warning">
+          Add at least {minVideos === 1 ? "one video" : `${minVideos} videos`} — a walkthrough or tour clip is required before this property can go live ({videoCount} so far).
         </p>
       )}
 

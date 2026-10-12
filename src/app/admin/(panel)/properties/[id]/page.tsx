@@ -22,7 +22,7 @@ type TabKey = "content" | "media" | "rooms" | "amenities" | "nearby" | "curation
 type ReviewAction = "APPROVE" | "REJECT" | "SUSPEND" | "UNSUSPEND";
 
 const ACTION_COPY: Record<ReviewAction, { title: string; label: string; tone: "primary" | "danger"; notesRequired: boolean; description: string }> = {
-  APPROVE: { title: "Approve & publish?", label: "Approve", tone: "primary", notesRequired: false, description: "The property goes LIVE and pending room types are approved with it. The partner is notified." },
+  APPROVE: { title: "Approve & publish?", label: "Approve", tone: "primary", notesRequired: false, description: "The property goes LIVE and pending room types are approved with it. The partner is notified. A property must have at least one video to go live." },
   REJECT: { title: "Reject submission?", label: "Reject", tone: "danger", notesRequired: true, description: "The partner sees your notes and can resubmit." },
   SUSPEND: { title: "Suspend property?", label: "Suspend", tone: "danger", notesRequired: false, description: "The property is hidden from guests immediately. Existing bookings are unaffected." },
   UNSUSPEND: { title: "Restore property?", label: "Restore", tone: "primary", notesRequired: false, description: "The property becomes visible to guests again." },
@@ -105,7 +105,7 @@ export default function AdminPropertyPage() {
           />
           <div role="tabpanel">
             {tab === "content" && <ContentTab property={p} onUpdated={onUpdated} />}
-            {tab === "media" && <MediaManager ownerType="PROPERTY" ownerId={p.id} minImages={3} />}
+            {tab === "media" && <MediaManager ownerType="PROPERTY" ownerId={p.id} minImages={3} minVideos={1} />}
             {tab === "rooms" && <RoomsTab property={p} onChanged={refetch} />}
             {tab === "amenities" && <AmenitiesTab property={p} onUpdated={onUpdated} />}
             {tab === "nearby" && <NearbyList property={p} />}

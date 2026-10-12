@@ -38,10 +38,12 @@ const CONTENT_TABS: Partial<Record<TabKey, (keyof PropertyFormState)[]>> = { det
 
 function checklist(p: PartnerPropertyDetail) {
   const images = p.media.filter((m) => m.kind === "IMAGE").length;
+  const videos = p.media.filter((m) => m.kind === "VIDEO").length;
   return [
     { ok: !!p.shortDescription && !!p.description, label: "Short and full description", tab: "details" as TabKey },
     { ok: !!(p.cityId ?? p.city) && !!p.address, label: "City and street address", tab: "location" as TabKey },
     { ok: images >= 3, label: `At least 3 photos (${images} uploaded)`, tab: "media" as TabKey },
+    { ok: videos >= 1, label: `A property video (${videos} uploaded)`, tab: "media" as TabKey },
     { ok: p.roomTypes.some((r) => r.status !== "INACTIVE" && r.ratePlans.length > 0), label: "At least one room type with a rate plan", tab: "rooms" as TabKey },
     { ok: !!p.cancellationPolicy, label: "Cancellation policy", tab: "policies" as TabKey },
   ];
@@ -199,8 +201,8 @@ function Editor() {
               </Section>
             )}
             {tab === "media" && (
-              <Section title="Photos & videos" description="Upload at least 3 photos. Star a photo to make it the cover, and star a video to use it as the preview on listing cards. Room photos go under Rooms & rates.">
-                <MediaManager ownerType="PROPERTY" ownerId={p.id} minImages={3} tags={["EXTERIOR", "COMMON_AREA", "POOL", "DINING", "VIEW", "SURROUNDINGS", "AMENITY", "ROOM_WALKTHROUGH", "OTHER"]} />
+              <Section title="Photos & videos" description="Upload at least 3 photos and one walkthrough video — a video is required before your property can go live. Star a photo to make it the cover, and star a video to use it as the preview on listing cards. Room photos go under Rooms & rates.">
+                <MediaManager ownerType="PROPERTY" ownerId={p.id} minImages={3} minVideos={1} tags={["EXTERIOR", "COMMON_AREA", "POOL", "DINING", "VIEW", "SURROUNDINGS", "AMENITY", "ROOM_WALKTHROUGH", "OTHER"]} />
               </Section>
             )}
             {tab === "rooms" && <RoomsTab property={p} onChanged={refetch} />}

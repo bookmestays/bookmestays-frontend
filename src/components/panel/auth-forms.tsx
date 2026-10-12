@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { Eye, EyeOff, Lock, UserPlus } from "lucide-react";
 import { api } from "@/lib/api";
 import { errorMessage } from "@/lib/use-api";
 import type { AuthResponse } from "@/lib/types";
@@ -91,7 +92,94 @@ export function LoginForm({ portal }: { portal: Portal }) {
           <Lock className="size-4" /> Sign in
         </Button>
       </form>
-      {portal === "partner" && <p className="mt-5 text-center text-xs text-muted">Don&apos;t have an account? Partner accounts are created by the BookMeStays team — contact bookmestaysupport@gmail.com.</p>}
+      {portal === "partner" && (
+        <p className="mt-5 text-center text-sm text-muted">
+          New to BookMeStays?{" "}
+          <Link href="/partner/register" className="font-medium text-brand hover:underline">
+            List your property
+          </Link>
+        </p>
+      )}
+    </AuthCard>
+  );
+}
+
+/** Partner self-registration: creates the owner login + business and signs them in. */
+export function RegisterForm() {
+  const router = useRouter();
+  const [businessName, setBusinessName] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [touched, setTouched] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const problems = passwordProblems(password);
+  const errs = {
+    businessName: businessName.trim().length < 2 ? "Enter your property or business name" : null,
+    contactName: contactName.trim().length < 2 ? "Enter your name" : null,
+    email: !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()) ? "Enter a valid email" : null,
+    phone: phone.replace(/\D/g, "").length < 10 ? "Enter a valid phone number" : null,
+    password: problems.length ? `Use ${problems.join(" and ")}` : null,
+  };
+  const invalid = Object.values(errs).some(Boolean);
+
+  return (
+    <AuthCard portal="partner">
+      <h1 className="text-xl font-semibold text-ink">List your property</h1>
+      <p className="mt-1 mb-5 text-sm text-muted">Create a partner account, add your property, and go live after a quick review by our team.</p>
+      <form
+        noValidate
+        className="space-y-4"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setTouched(true);
+          if (invalid) return;
+          setBusy(true);
+          setError(null);
+          try {
+            await api<AuthResponse>("/auth/partner/register", {
+              method: "POST",
+              body: { businessName: businessName.trim(), contactName: contactName.trim(), email: email.trim(), phone: phone.trim(), password },
+            });
+            router.replace("/partner");
+          } catch (err) {
+            setError(errorMessage(err, "Could not create your account."));
+            setBusy(false);
+          }
+        }}
+      >
+        <Field label="Property / business name" required error={touched ? errs.businessName : null}>
+          <Input value={businessName} onChange={(e) => setBusinessName(e.target.value)} autoFocus aria-invalid={touched && !!errs.businessName} />
+        </Field>
+        <Field label="Your name" required error={touched ? errs.contactName : null}>
+          <Input autoComplete="name" value={contactName} onChange={(e) => setContactName(e.target.value)} aria-invalid={touched && !!errs.contactName} />
+        </Field>
+        <Field label="Email" required error={touched ? errs.email : null}>
+          <Input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={touched && !!errs.email} />
+        </Field>
+        <Field label="Phone" required error={touched ? errs.phone : null}>
+          <Input type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} aria-invalid={touched && !!errs.phone} />
+        </Field>
+        <Field label="Password" required error={touched ? errs.password : null} hint="At least 8 characters with letters and numbers.">
+          <PasswordInput autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} aria-invalid={touched && !!errs.password} />
+        </Field>
+        {error && (
+          <p role="alert" className="rounded-lg bg-danger/5 px-3 py-2 text-sm text-danger">
+            {error}
+          </p>
+        )}
+        <Button type="submit" className="w-full" loading={busy}>
+          <UserPlus className="size-4" /> Create partner account
+        </Button>
+      </form>
+      <p className="mt-5 text-center text-sm text-muted">
+        Already a partner?{" "}
+        <Link href="/partner/login" className="font-medium text-brand hover:underline">
+          Sign in
+        </Link>
+      </p>
     </AuthCard>
   );
 }
