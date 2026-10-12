@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, PlayCircle, Star } from "lucide-react";
+import { Crown, MapPin, PlayCircle, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { track } from "@/lib/analytics";
@@ -11,6 +11,31 @@ import { SmartImage } from "../media/smart-image";
 import { SmartVideo } from "../media/smart-video";
 import { PriceTag, RatingBadge } from "../primitives";
 import { WishlistButton } from "../wishlist-context";
+
+/** Gold takes visual priority over Rising when a property holds both badges. */
+export function tierOf(p: { isGold?: boolean; isRising?: boolean }): "GOLD" | "RISING" | null {
+  return p.isGold ? "GOLD" : p.isRising ? "RISING" : null;
+}
+
+/** Small performance badge (Gold / Rising) shown on property cards. */
+export function TierBadge({ tier, className }: { tier: "GOLD" | "RISING"; className?: string }) {
+  const gold = tier === "GOLD";
+  const Icon = gold ? Crown : TrendingUp;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-bold tracking-wide text-white shadow-sm backdrop-blur",
+        gold
+          ? "bg-gradient-to-r from-amber-500 to-yellow-500 ring-1 ring-amber-300/50"
+          : "bg-gradient-to-r from-emerald-500 to-teal-500 ring-1 ring-emerald-300/50",
+        className,
+      )}
+    >
+      <Icon className="size-3" aria-hidden />
+      {gold ? "Gold" : "Rising"}
+    </span>
+  );
+}
 
 function Media({ p, hovered, sizes, eager }: { p: PropertyCardDTO; hovered: boolean; sizes: string; eager?: boolean }) {
   if (p.previewVideoUrl) {
@@ -44,6 +69,7 @@ function Media({ p, hovered, sizes, eager }: { p: PropertyCardDTO; hovered: bool
 export function PropertyPosterCard({ p, query = "", eager, className }: { p: PropertyCardDTO; query?: string; eager?: boolean; className?: string }) {
   const [hovered, setHovered] = useState(false);
   const href = `/stays/${p.slug}${query}`;
+  const tier = tierOf(p);
   return (
     <article
       className={cn("group relative flex flex-col", className)}
@@ -53,9 +79,12 @@ export function PropertyPosterCard({ p, query = "", eager, className }: { p: Pro
       <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-surface-2 shadow-sm">
         <Media p={p} hovered={hovered} sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 240px" eager={eager} />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
-        <span className="absolute top-2 left-2 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-ink shadow-sm backdrop-blur">
-          {TYPE_SINGULAR[p.type]}
-        </span>
+        <div className="absolute top-2 left-2 flex flex-col items-start gap-1">
+          {tier && <TierBadge tier={tier} />}
+          <span className="rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-ink shadow-sm backdrop-blur">
+            {TYPE_SINGULAR[p.type]}
+          </span>
+        </div>
         {p.previewVideoUrl && (
           <PlayCircle className="absolute bottom-2 left-2 size-5 text-white drop-shadow" aria-label="Has video preview" />
         )}
@@ -88,6 +117,7 @@ export function PropertyPosterCard({ p, query = "", eager, className }: { p: Pro
 export function PropertyListCard({ p, query = "", eager }: { p: PropertyCardDTO; query?: string; eager?: boolean }) {
   const [hovered, setHovered] = useState(false);
   const href = `/stays/${p.slug}${query}`;
+  const tier = tierOf(p);
   const chips = [...p.highlights.slice(0, 2), ...p.amenities.map((a) => a.name)].slice(0, 4);
   return (
     <article
@@ -97,6 +127,7 @@ export function PropertyListCard({ p, query = "", eager }: { p: PropertyCardDTO;
     >
       <div className="relative aspect-[16/10] shrink-0 overflow-hidden bg-surface-2 sm:aspect-auto sm:w-72 lg:w-80">
         <Media p={p} hovered={hovered} sizes="(max-width: 640px) 100vw, 320px" eager={eager} />
+        {tier && <TierBadge tier={tier} className="absolute top-2 left-2 z-10" />}
         <WishlistButton type="PROPERTY" id={p.id} name={p.name} className="absolute top-2 right-2 z-10" />
         {p.previewVideoUrl && (
           <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white">

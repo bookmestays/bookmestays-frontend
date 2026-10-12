@@ -30,6 +30,10 @@ export function buildQuery(query?: Options["query"]) {
   return s ? `?${s}` : "";
 }
 
+// Endpoints whose 401 means "wrong credentials", not "access token expired".
+// Everything else (incl. /auth/me) silently refreshes so users stay signed in.
+const NO_REFRESH = /^\/auth\/(login|register|refresh|logout|otp)(\/|$|\?)/;
+
 let refreshing: Promise<boolean> | null = null;
 const refresh = () =>
   (refreshing ??= fetch("/api/auth/refresh", { method: "POST", credentials: "include" })
@@ -50,7 +54,7 @@ export async function api<T = unknown>(path: string, opts: Options = {}, retried
     body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
   });
 
-  if (res.status === 401 && !retried && !path.startsWith("/auth/")) {
+  if (res.status === 401 && !retried && !NO_REFRESH.test(path)) {
     if (await refresh()) return api<T>(path, opts, true);
   }
 

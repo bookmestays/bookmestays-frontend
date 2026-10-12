@@ -23,7 +23,10 @@ const TYPE_INFO: Record<HomeSectionType, { label: string; hint: string }> = {
   CITIES: { label: "Cities", hint: "Featured cities." },
   COLLECTIONS: { label: "Collections", hint: "Curated collections." },
   CITY_SPOTLIGHT: { label: "City spotlight", hint: "Stays, areas and experiences for one city." },
-  WHY_BOOKMESTAYS: { label: "Why BookMeStays", hint: "Static value propositions." },
+  WHY_BOOKMESTAYS: { label: "Why BookMeStays", hint: "Legacy value-props slot (now shows testimonials)." },
+  GOLD: { label: "Gold Collection", hint: "Auto: stays that hit the Gold booking target (set it in Settings → Performance tiers)." },
+  RISING: { label: "Rising Stays", hint: "Auto: stays that hit the Rising booking target (set it in Settings → Performance tiers)." },
+  TESTIMONIALS: { label: "Testimonials", hint: "Guest testimonials carousel. Manage entries in CMS → Testimonials." },
 };
 
 export default function HomeSectionsPage() {

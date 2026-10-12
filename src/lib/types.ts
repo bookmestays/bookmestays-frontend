@@ -10,7 +10,7 @@ export type MealPlan = "EP" | "CP" | "MAP" | "AP";
 export type CommissionType = "PERCENT" | "FLAT";
 export type SettlementCycle = "WEEKLY" | "BIWEEKLY" | "MONTHLY" | "AFTER_CHECKOUT";
 export type KycStatus = "PENDING" | "SUBMITTED" | "VERIFIED" | "REJECTED";
-export type MediaOwnerType = "PROPERTY" | "ROOM_TYPE" | "NEARBY_PLACE" | "EXPERIENCE" | "CITY" | "COLLECTION" | "BANNER";
+export type MediaOwnerType = "PROPERTY" | "ROOM_TYPE" | "NEARBY_PLACE" | "EXPERIENCE" | "CITY" | "COLLECTION" | "BANNER" | "TESTIMONIAL";
 export type MediaKind = "IMAGE" | "VIDEO";
 export type MediaTag =
   | "EXTERIOR" | "ROOM_WALKTHROUGH" | "ROOM" | "BATHROOM" | "VIEW" | "COMMON_AREA"
@@ -22,7 +22,8 @@ export type ChannelProvider = "AXISROOMS" | "EZEE" | "STAAH" | "SITEMINDER";
 export type ChannelConnectionStatus = "PENDING" | "ACTIVE" | "DISABLED" | "ERROR";
 export type HomeSectionType =
   | "RECOMMENDED" | "PROPERTY_TYPES" | "FEATURED" | "VIDEO_DISCOVERY" | "EXPERIENCES"
-  | "CITIES" | "COLLECTIONS" | "CITY_SPOTLIGHT" | "WHY_BOOKMESTAYS";
+  | "CITIES" | "COLLECTIONS" | "CITY_SPOTLIGHT" | "WHY_BOOKMESTAYS"
+  | "GOLD" | "RISING" | "TESTIMONIALS";
 
 export type Paginated<T> = { items: T[]; total: number; page: number; limit: number; totalPages: number };
 export type Seo = { title?: string; description?: string; keywords?: string[]; ogImage?: string };
@@ -82,6 +83,8 @@ export type PropertyCard = {
   previewVideoPosterUrl: string | null;
   highlights: string[];
   amenities: { code: string; name: string; icon: string | null }[]; // top 4
+  isGold: boolean; // auto-awarded "Gold" performance badge
+  isRising: boolean; // auto-awarded "Rising" performance badge
   lat: number | null;
   lng: number | null;
 };
@@ -224,17 +227,42 @@ export type Banner = {
 
 export type VideoFeedItem = { media: Media; property: PropertyCard };
 
+/** A guest testimonial shown in the homepage carousel. */
+export type Testimonial = {
+  id: string;
+  authorName: string;
+  authorTitle: string | null;
+  authorLocation: string | null;
+  avatarUrl: string | null;
+  quote: string;
+  rating: number;
+  isFeatured: boolean;
+  propertyName: string | null;
+  propertySlug: string | null;
+};
+
 export type HomeSection =
-  | { id: string; type: "RECOMMENDED" | "FEATURED"; title: string; subtitle: string | null; items: PropertyCard[] }
+  | { id: string; type: "RECOMMENDED" | "FEATURED" | "GOLD" | "RISING"; title: string; subtitle: string | null; items: PropertyCard[] }
   | { id: string; type: "PROPERTY_TYPES"; title: string; subtitle: string | null; items: { type: PropertyType; label: string; count: number; imageUrl: string | null }[] }
   | { id: string; type: "VIDEO_DISCOVERY"; title: string; subtitle: string | null; items: VideoFeedItem[] }
   | { id: string; type: "EXPERIENCES"; title: string; subtitle: string | null; items: ExperienceCard[] }
   | { id: string; type: "CITIES"; title: string; subtitle: string | null; items: CityCard[] }
   | { id: string; type: "COLLECTIONS"; title: string; subtitle: string | null; items: CollectionCard[] }
   | { id: string; type: "CITY_SPOTLIGHT"; title: string; subtitle: string | null; city: CityCard | null; areas: Area[]; items: PropertyCard[]; experiences: ExperienceCard[] }
+  | { id: string; type: "TESTIMONIALS"; title: string; subtitle: string | null; items: Testimonial[] }
   | { id: string; type: "WHY_BOOKMESTAYS"; title: string; subtitle: string | null; items: [] };
 
-export type HomePayload = { banners: Banner[]; sections: HomeSection[] };
+/** Advertising poster shown as a strip after a home section. */
+export type HomeAd = {
+  id: string;
+  title: string;
+  afterSection: HomeSectionType;
+  imageUrl: string;
+  mobileImageUrl: string | null;
+  linkUrl: string | null;
+};
+
+export type HomePayload = { banners: Banner[]; sections: HomeSection[]; ads?: HomeAd[] };
 
 export type SiteMeta = {
   cities: CityLite[];
@@ -357,6 +385,14 @@ export type BookingDetail = BookingSummary & {
   confirmedAt: string | null;
   cancelledAt: string | null;
   cancelReason: string | null;
+  invoice?: {
+    sellerLegalName: string | null;
+    sellerGstin: string | null;
+    propertyPincode: string | null;
+    paymentMethod: string | null;
+    paymentReference: string | null;
+    paidAt: string | null;
+  };
   property: BookingSummary["property"] & { address: string | null; checkInTime: string | null; checkOutTime: string | null; contactPhone: string | null; lat: number | null; lng: number | null };
   // partner/admin only
   commissionAmount?: number;

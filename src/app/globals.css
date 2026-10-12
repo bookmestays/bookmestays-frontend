@@ -94,3 +94,54 @@ h3,
     padding-bottom: 5.5rem;
   }
 }
+
+/* ─── Booking invoice (see components/site/account/booking-invoice.tsx) ───── */
+.invoice-sheet {
+  display: none;
+}
+@media print {
+  /* Zero page margin removes the browser's own header/footer (URL, date, title) */
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  html,
+  body {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body:has(> .invoice-sheet) > *:not(.invoice-sheet) {
+    display: none !important;
+  }
+  .invoice-sheet {
+    display: block;
+    padding: 14mm 16mm;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  .invoice-sheet tr,
+  .invoice-sheet section {
+    break-inside: avoid;
+  }
+}
+
+/* ─── Home experiences showcase ─────────────────────────────────────────────── */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}

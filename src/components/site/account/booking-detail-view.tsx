@@ -14,6 +14,7 @@ import { directionsUrl } from "../map-embed";
 import { SmartImage } from "../media/smart-image";
 import { PolicyRules } from "../property/property-sections";
 import { CancelBookingModal, ReviewModal } from "./booking-modals";
+import { BookingInvoice, printInvoice } from "./booking-invoice";
 import { BookingStatusBadge } from "./booking-status";
 
 export function useBookingDetail(code: string) {
@@ -308,8 +309,8 @@ export function BookingDetailView({ code, variant }: { code: string; variant: "c
       )}
 
       <div className="flex flex-wrap gap-2 print:hidden">
-        <Button variant="outline" onClick={() => window.print()}>
-          <Printer className="size-4" aria-hidden /> Print / download PDF
+        <Button variant="outline" onClick={() => printInvoice(b.code)}>
+          <Printer className="size-4" aria-hidden /> Download invoice (PDF)
         </Button>
         {variant === "confirmation" ? (
           <Link href={`/account/bookings/${b.code}`} className={buttonClass("outline")}>
@@ -344,6 +345,7 @@ export function BookingDetailView({ code, variant }: { code: string; variant: "c
           />
         )}
       </Modal>
+      <BookingInvoice booking={b} />
       <CancelBookingModal booking={b} open={cancelOpen} onClose={() => setCancelOpen(false)} onCancelled={set} />
       <ReviewModal bookingCode={b.code} propertyName={b.property.name} open={reviewOpen} onClose={() => setReviewOpen(false)} onDone={() => setReviewed(true)} />
     </div>

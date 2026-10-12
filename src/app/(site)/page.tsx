@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GetawayPlanner } from "@/components/site/home/getaway-planner";
 import { HeroCarousel } from "@/components/site/home/hero-carousel";
 import { HomeSections, WhyBookMeStays } from "@/components/site/home/home-sections";
 import { Container, JsonLd } from "@/components/site/primitives";
@@ -27,6 +28,7 @@ export default async function HomePage() {
   ]);
   const banners = home.data?.banners ?? [];
   const sections = home.data?.sections ?? [];
+  const ads = home.data?.ads ?? [];
 
   return (
     <>
@@ -58,8 +60,10 @@ export default async function HomePage() {
         </Container>
       )}
 
-      <div className="pt-4">
-        {sections.length > 0 ? <HomeSections sections={sections} /> : <WhyBookMeStays tone="white" />}
+      <GetawayPlanner />
+
+      <div>
+        {sections.length > 0 ? <HomeSections sections={sections} ads={ads} /> : <WhyBookMeStays tone="white" />}
       </div>
     </>
   );

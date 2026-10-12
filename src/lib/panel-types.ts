@@ -5,6 +5,7 @@ import type {
   Amenity,
   Area,
   Banner,
+  HomeAd,
   BookingDetail,
   ChannelConnection,
   ChannelSyncLog,
@@ -20,6 +21,19 @@ import type {
   Seo,
   User,
 } from "./types";
+
+export type AdminHomeAd = HomeAd & {
+  imageWidth: number;
+  imageHeight: number;
+  mobileImageWidth: number | null;
+  mobileImageHeight: number | null;
+  sort: number;
+  isActive: boolean;
+  startsAt: string | null;
+  endsAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type AdminBanner = Banner & {
   propertyId?: string | null;
@@ -150,6 +164,25 @@ export type TaxSettings = {
 };
 export type BookingSettings = { holdMinutes: number; maxRoomsPerBooking: number; maxNights: number };
 export type SupportSettings = { phone: string; email: string; whatsapp: string; social: Record<string, string> };
+
+export type TierRule = { enabled: boolean; windowDays: number; minBookings: number };
+export type TierSettings = { gold: TierRule; rising: TierRule };
+
+export type AdminTestimonial = {
+  id: string;
+  authorName: string;
+  authorTitle: string | null;
+  authorLocation: string | null;
+  avatarUrl: string | null;
+  quote: string;
+  rating: number;
+  propertyId: string | null;
+  isActive: boolean;
+  isFeatured: boolean;
+  sort: number;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export type AuditLog = {
   id: string;

@@ -4,11 +4,12 @@ import { useState, type ReactNode } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { errorMessage, useApi } from "@/lib/use-api";
-import type { BookingSettings, SupportSettings, TaxSettings } from "@/lib/panel-types";
+import type { BookingSettings, SupportSettings, TaxSettings, TierRule, TierSettings } from "@/lib/panel-types";
 import type { RankingSettings } from "@/lib/types";
+import { Crown, TrendingUp } from "lucide-react";
 import { Button, ErrorState, Field, Input, Skeleton, useToast } from "@/components/ui";
 import { PageHeader, Section } from "@/components/panel/page";
-import { MoneyInput, NumberInput, PercentInput } from "@/components/panel/inputs";
+import { MoneyInput, NumberInput, PercentInput, Toggle } from "@/components/panel/inputs";
 import { sameJson } from "@/components/panel/unsaved";
 import { formatINR } from "@/lib/format";
 
@@ -76,6 +77,48 @@ function SettingsBlock<T extends object>({
       {error && !data ? <ErrorState message={error.message} onRetry={refetch} /> : loading && !draft ? <Skeleton className="h-32" /> : draft && children(draft, (p) => setDraft({ ...draft, ...p }))}
       {err && <p className="mt-2 text-xs text-danger">{err}</p>}
     </Section>
+  );
+}
+
+function TierRuleRow({
+  name,
+  gold,
+  rule,
+  onChange,
+}: {
+  name: string;
+  gold: boolean;
+  rule: TierRule;
+  onChange: (r: TierRule) => void;
+}) {
+  const Icon = gold ? Crown : TrendingUp;
+  return (
+    <div className={`rounded-xl border p-4 ${rule.enabled ? (gold ? "border-amber-300 bg-amber-50/50" : "border-emerald-300 bg-emerald-50/50") : "border-line"}`}>
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex items-center gap-2 font-semibold text-ink">
+          <span className={`flex size-7 items-center justify-center rounded-lg text-white ${gold ? "bg-gradient-to-br from-amber-500 to-yellow-500" : "bg-gradient-to-br from-emerald-500 to-teal-500"}`}>
+            <Icon className="size-4" aria-hidden />
+          </span>
+          {name}
+        </span>
+        <Toggle label={rule.enabled ? "On" : "Off"} checked={rule.enabled} onChange={(v) => onChange({ ...rule, enabled: v })} />
+      </div>
+      {rule.enabled && (
+        <>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <Field label="Bookings needed">
+              <NumberInput min={1} value={rule.minBookings} onChange={(n) => onChange({ ...rule, minBookings: n ?? 1 })} />
+            </Field>
+            <Field label="Within (days)">
+              <NumberInput min={1} max={365} value={rule.windowDays} onChange={(n) => onChange({ ...rule, windowDays: n ?? 1 })} />
+            </Field>
+          </div>
+          <p className="mt-2 text-xs text-muted">
+            A stay earns the <strong>{name}</strong> badge once it receives {rule.minBookings} confirmed booking{rule.minBookings === 1 ? "" : "s"} in the last {rule.windowDays} day{rule.windowDays === 1 ? "" : "s"}.
+          </p>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -209,6 +252,28 @@ export default function SettingsPage() {
                 </label>
               ))}
             </fieldset>
+          )}
+        </SettingsBlock>
+
+        <SettingsBlock<TierSettings>
+          settingKey="tiers"
+          title="Performance tiers"
+          description="Gold & Rising badges are awarded automatically to stays that receive enough bookings within a rolling window. Each gets its own homepage row. Saving re-evaluates every property immediately."
+          defaults={{ gold: { enabled: true, windowDays: 7, minBookings: 12 }, rising: { enabled: true, windowDays: 7, minBookings: 15 } }}
+          validate={(v) => {
+            for (const r of [v.gold, v.rising]) {
+              if (!r.enabled) continue;
+              if (r.minBookings < 1) return "Bookings needed must be at least 1";
+              if (r.windowDays < 1 || r.windowDays > 365) return "Window must be 1–365 days";
+            }
+            return null;
+          }}
+        >
+          {(v, set) => (
+            <div className="space-y-3">
+              <TierRuleRow name="Gold" gold rule={v.gold} onChange={(gold) => set({ gold })} />
+              <TierRuleRow name="Rising" gold={false} rule={v.rising} onChange={(rising) => set({ rising })} />
+            </div>
           )}
         </SettingsBlock>
 

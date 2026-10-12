@@ -1,8 +1,12 @@
-import { ClipboardList, Compass, MapPin, MousePointerClick, PlayCircle, Sparkles } from "lucide-react";
+import { ClipboardList, Compass, Crown, MapPin, MousePointerClick, PlayCircle, Sparkles, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { Fragment } from "react";
 import { searchHref } from "@/lib/search-params";
-import type { HomeSection } from "@/lib/types";
+import type { HomeAd, HomeSection } from "@/lib/types";
 import { ExperienceCard } from "../cards/experience-card";
+import { ExperienceShowcase } from "./experience-showcase";
+import { Testimonials } from "./testimonials";
+import { HomeAdStrip } from "./home-ad-strip";
 import { PropertyPosterCard } from "../cards/property-card";
 import { CityTile, CollectionTile, PropertyTypeTile } from "../cards/tiles";
 import { VideoCard } from "../cards/video-card";
@@ -10,17 +14,31 @@ import { SmartImage } from "../media/smart-image";
 import { Band, Container, SectionHeading } from "../primitives";
 import { rowItem } from "../constants";
 import { ScrollRow } from "../scroll-row";
+import { cn } from "@/lib/cn";
 
-/** Renders home sections in the order returned by GET /public/home. */
-export function HomeSections({ sections }: { sections: HomeSection[] }) {
+/**
+ * Renders home sections in the order returned by GET /public/home, each followed
+ * by its admin-managed ad posters (shown after the first section of that type).
+ */
+export function HomeSections({ sections, ads = [] }: { sections: HomeSection[]; ads?: HomeAd[] }) {
   let bandIndex = 0;
+  const adsShown = new Set<string>();
   return (
     <>
       {sections.map((s) => {
         const hasItems = s.type === "WHY_BOOKMESTAYS" || s.type === "CITY_SPOTLIGHT" ? true : s.items.length > 0;
         if (!hasItems) return null;
-        const tone = bandIndex++ % 2 === 0 ? "white" : "grey";
-        return <HomeSectionView key={s.id} section={s} tone={tone} />;
+        const slotAds = adsShown.has(s.type) ? [] : ads.filter((a) => a.afterSection === s.type);
+        adsShown.add(s.type);
+        // Experiences and testimonials are full-bleed and dark, so they sit out the white/grey alternation.
+        const fullBleed = s.type === "EXPERIENCES" || s.type === "TESTIMONIALS";
+        const tone = fullBleed ? "white" : bandIndex++ % 2 === 0 ? "white" : "grey";
+        return (
+          <Fragment key={s.id}>
+            <HomeSectionView section={s} tone={tone} />
+            {slotAds.length > 0 && <HomeAdStrip ads={slotAds} />}
+          </Fragment>
+        );
       })}
     </>
   );
@@ -42,6 +60,35 @@ function HomeSectionView({ section: s, tone }: { section: HomeSection; tone: "wh
           </Container>
         </Band>
       );
+    case "GOLD":
+    case "RISING": {
+      const gold = s.type === "GOLD";
+      const Icon = gold ? Crown : TrendingUp;
+      return (
+        <Band tone={tone} className={gold ? "bg-gradient-to-b from-amber-50/70 to-transparent" : "bg-gradient-to-b from-emerald-50/70 to-transparent"}>
+          <Container>
+            <div className="mb-3 flex items-center gap-2">
+              <span
+                className={cn(
+                  "flex size-9 items-center justify-center rounded-xl text-white shadow-sm",
+                  gold ? "bg-gradient-to-br from-amber-500 to-yellow-500" : "bg-gradient-to-br from-emerald-500 to-teal-500",
+                )}
+              >
+                <Icon className="size-5" aria-hidden />
+              </span>
+              <SectionHeading title={s.title} subtitle={s.subtitle} className="mb-0" />
+            </div>
+            <ScrollRow label={s.title}>
+              {s.items.map((p) => (
+                <PropertyPosterCard key={p.id} p={p} className={rowItem.poster} />
+              ))}
+            </ScrollRow>
+          </Container>
+        </Band>
+      );
+    }
+    case "TESTIMONIALS":
+      return <Testimonials title={s.title} subtitle={s.subtitle} items={s.items} />;
     case "PROPERTY_TYPES":
       return (
         <Band tone={tone}>
@@ -69,18 +116,7 @@ function HomeSectionView({ section: s, tone }: { section: HomeSection; tone: "wh
         </Band>
       );
     case "EXPERIENCES":
-      return (
-        <Band tone={tone}>
-          <Container>
-            <SectionHeading title={s.title} subtitle={s.subtitle} href="/experiences" />
-            <ScrollRow label={s.title}>
-              {s.items.map((e) => (
-                <ExperienceCard key={e.id} e={e} className={rowItem.wide} />
-              ))}
-            </ScrollRow>
-          </Container>
-        </Band>
-      );
+      return <ExperienceShowcase title={s.title} subtitle={s.subtitle} items={s.items} />;
     case "CITIES":
       return (
         <Band tone={tone}>
