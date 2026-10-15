@@ -22,7 +22,7 @@ export default function ChannelManagersPage() {
   const tab = get("tab") || "connections";
   return (
     <>
-      <PageHeader title="Channel managers" description="AxisRooms, eZee Centrix, STAAH and SiteMinder integrations. One channel manager per property." />
+      <PageHeader title="Channel managers" description="AxisRooms, eZee Centrix, STAAH, SiteMinder and AsiaTech integrations. One channel manager per property." />
       <UrlTabs
         tabs={[
           { value: "connections", label: "Connections" },

@@ -18,7 +18,7 @@ export type MediaTag =
 export type BookingStatus =
   | "PENDING_PAYMENT" | "CONFIRMED" | "CHECKED_IN" | "COMPLETED" | "CANCELLED" | "NO_SHOW" | "EXPIRED";
 export type SettlementStatus = "PENDING" | "APPROVED" | "PROCESSING" | "PAID" | "FAILED" | "ON_HOLD";
-export type ChannelProvider = "AXISROOMS" | "EZEE" | "STAAH" | "SITEMINDER";
+export type ChannelProvider = "AXISROOMS" | "EZEE" | "STAAH" | "SITEMINDER" | "ASIATECH";
 export type ChannelConnectionStatus = "PENDING" | "ACTIVE" | "DISABLED" | "ERROR";
 export type HomeSectionType =
   | "RECOMMENDED" | "PROPERTY_TYPES" | "FEATURED" | "VIDEO_DISCOVERY" | "EXPERIENCES"
@@ -656,6 +656,7 @@ export const CHANNEL_PROVIDER_LABELS: Record<ChannelProvider, string> = {
   EZEE: "eZee Centrix",
   STAAH: "STAAH",
   SITEMINDER: "SiteMinder",
+  ASIATECH: "AsiaTech",
 };
 
 // ─── Booking modification (change dates / guests / rooms) ─────────────────────

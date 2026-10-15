@@ -10,7 +10,7 @@ export default function PartnerPage() {
       title="Partner with BookMeStays"
       subtitle="Show guests exactly what they'll get — and get bookings from travellers who already know they love your place."
       sections={[
-        { title: "Why list with us", body: <ul><li>Video-first listings that set honest expectations and reduce cancellations.</li><li>Prepaid bookings with transparent commission and scheduled settlements.</li><li>Channel manager integrations (AxisRooms, eZee, STAAH, SiteMinder) to keep inventory in sync.</li><li>A partner dashboard for rates, availability, bookings, payouts and reviews.</li></ul> },
+        { title: "Why list with us", body: <ul><li>Video-first listings that set honest expectations and reduce cancellations.</li><li>Prepaid bookings with transparent commission and scheduled settlements.</li><li>Channel manager integrations (AxisRooms, eZee, STAAH, SiteMinder, AsiaTech) to keep inventory in sync.</li><li>A partner dashboard for rates, availability, bookings, payouts and reviews.</li></ul> },
         { title: "How onboarding works", body: <ul><li>Register your partner account and add your property.</li><li>Upload photos and a walkthrough video (required), then set up rooms and rates.</li><li>Submit for review — our team approves each property before it goes live.</li></ul> },
         { title: "Get started", body: <p><Link href="/partner/register">Create your partner account</Link> and list your property today. Existing partners can sign in at the <Link href="/partner/login">partner panel</Link>. Questions? Email <a href="mailto:bookmestaysupport@gmail.com">bookmestaysupport@gmail.com</a>.</p> },
       ]}
