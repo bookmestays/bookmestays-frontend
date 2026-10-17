@@ -1,9 +1,9 @@
-import { Check, Clock, LogIn, LogOut, MapPin, Navigation, ScrollText } from "lucide-react";
+import { Check, Clock, LogIn, LogOut, MapPin, ScrollText } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import type { Amenity, CancellationPolicy, NearbyPlace } from "@/lib/types";
 import { SmartImage } from "../media/smart-image";
-import { directionsUrl, MapEmbed } from "../map-embed";
+import { MapEmbed } from "../map-embed";
 import { Prose } from "../primitives";
 
 export function DetailSection({
@@ -88,11 +88,6 @@ export function LocationBlock({ name, address, lat, lng }: { name: string; addre
         </p>
       )}
       <MapEmbed lat={lat} lng={lng} label={name} className="h-72 sm:h-80" />
-      {lat != null && lng != null && (
-        <a href={directionsUrl(lat, lng)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:underline">
-          <Navigation className="size-4" aria-hidden /> Get directions
-        </a>
-      )}
     </div>
   );
 }

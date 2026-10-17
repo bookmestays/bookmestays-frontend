@@ -8,16 +8,10 @@ import type { PropertyCard } from "@/lib/types";
 import { SmartImage } from "../media/smart-image";
 import { PriceTag, RatingBadge } from "../primitives";
 
-const GOOGLE_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
-
+// Inline OpenStreetMap only — we never hand guests off to a Google Maps listing
+// (which exposes the property's phone/reviews and lets people book around us).
 function mapSrc(points: PropertyCard[], selected: PropertyCard | null) {
   const focus = selected ?? null;
-  if (GOOGLE_KEY) {
-    if (focus) return `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_KEY}&q=${focus.lat},${focus.lng}&zoom=15`;
-    const lat = points.reduce((s, p) => s + p.lat!, 0) / points.length;
-    const lng = points.reduce((s, p) => s + p.lng!, 0) / points.length;
-    return `https://www.google.com/maps/embed/v1/view?key=${GOOGLE_KEY}&center=${lat},${lng}&zoom=11`;
-  }
   if (focus) {
     const d = 0.01;
     return `https://www.openstreetmap.org/export/embed.html?bbox=${focus.lng! - d},${focus.lat! - d},${focus.lng! + d},${focus.lat! + d}&layer=mapnik&marker=${focus.lat},${focus.lng}`;

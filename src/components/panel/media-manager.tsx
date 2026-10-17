@@ -141,6 +141,16 @@ export function MediaManager({
       {title && <h3 className="text-sm font-semibold text-ink">{title}</h3>}
       {!readOnly && (
         <div
+          role="button"
+          tabIndex={0}
+          aria-label="Upload files — click or drop files here"
+          onClick={() => fileInput.current?.click()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              fileInput.current?.click();
+            }
+          }}
           onDragOver={(e: DragEvent) => {
             if (dragId) return;
             e.preventDefault();
@@ -154,16 +164,14 @@ export function MediaManager({
             if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
           }}
           className={cn(
-            "flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors",
+            "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors hover:border-brand hover:bg-brand-soft/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40",
             dragOver ? "border-brand bg-brand-soft/50" : "border-line bg-surface-2/50",
           )}
         >
           <UploadCloud className="size-8 text-muted" aria-hidden />
           <p className="text-sm text-ink">
             Drag & drop {kinds.length === 2 ? "photos or videos" : kinds[0] === "IMAGE" ? "photos" : "videos"} here, or{" "}
-            <button type="button" className="font-medium text-brand hover:underline" onClick={() => fileInput.current?.click()}>
-              browse
-            </button>
+            <span className="font-medium text-brand underline">browse</span>
           </p>
           <p className="text-xs text-muted">
             {kinds.includes("IMAGE") && "Images: JPEG/PNG/WebP/AVIF up to 15 MB. "}

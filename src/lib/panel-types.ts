@@ -164,6 +164,7 @@ export type TaxSettings = {
 };
 export type BookingSettings = { holdMinutes: number; maxRoomsPerBooking: number; maxNights: number };
 export type SupportSettings = { phone: string; email: string; whatsapp: string; social: Record<string, string> };
+export type NoticeSettings = { enabled: boolean; text: string; speed: "slow" | "normal" | "fast" };
 
 export type TierRule = { enabled: boolean; windowDays: number; minBookings: number };
 export type TierSettings = { gold: TierRule; rising: TierRule };

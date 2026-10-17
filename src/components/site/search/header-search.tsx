@@ -2,12 +2,13 @@
 
 import { Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
 import { searchHref } from "@/lib/search-params";
 import type { CityLite } from "@/lib/types";
 import { SuggestList, useCombobox, useSuggest, type Suggestion } from "./suggest";
+import { buildSearchPhrases, useTypedPlaceholder } from "./use-typed-placeholder";
 
 /** Header search with autosuggest (city / area / property / landmark). */
 export function HeaderSearch({
@@ -24,6 +25,8 @@ export function HeaderSearch({
   const router = useRouter();
   const [value, setValue] = useState("");
   const { items, loading, heading } = useSuggest(value, cities);
+  const phrases = useMemo(() => buildSearchPhrases(cities), [cities]);
+  const typedPlaceholder = useTypedPlaceholder(phrases, value.trim() === "");
 
   const go = (href: string) => {
     router.push(href);
@@ -68,7 +71,7 @@ export function HeaderSearch({
         type="search"
         autoComplete="off"
         autoFocus={autoFocus}
-        placeholder="Search for a city, area, property or landmark"
+        placeholder={typedPlaceholder}
         value={value}
         onChange={(e) => {
           setValue(e.target.value);

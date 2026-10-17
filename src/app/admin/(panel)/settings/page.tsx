@@ -4,10 +4,10 @@ import { useState, type ReactNode } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { errorMessage, useApi } from "@/lib/use-api";
-import type { BookingSettings, SupportSettings, TaxSettings, TierRule, TierSettings } from "@/lib/panel-types";
+import type { BookingSettings, NoticeSettings, SupportSettings, TaxSettings, TierRule, TierSettings } from "@/lib/panel-types";
 import type { RankingSettings } from "@/lib/types";
 import { Crown, TrendingUp } from "lucide-react";
-import { Button, ErrorState, Field, Input, Skeleton, useToast } from "@/components/ui";
+import { Button, ErrorState, Field, Input, Select, Skeleton, Textarea, useToast } from "@/components/ui";
 import { PageHeader, Section } from "@/components/panel/page";
 import { MoneyInput, NumberInput, PercentInput, Toggle } from "@/components/panel/inputs";
 import { sameJson } from "@/components/panel/unsaved";
@@ -294,6 +294,36 @@ export default function SettingsPage() {
                   <Input type="url" placeholder="https://" value={v.social?.[k] ?? ""} onChange={(e) => set({ social: { ...v.social, [k]: e.target.value } })} />
                 </Field>
               ))}
+            </div>
+          )}
+        </SettingsBlock>
+
+        <SettingsBlock<NoticeSettings>
+          settingKey="notice"
+          title="Notice ticker"
+          description="A scrolling announcement shown just below the header on every page of the site."
+          defaults={{ enabled: false, text: "", speed: "normal" }}
+          validate={(v) => (v.enabled && !v.text.trim() ? "Enter the notice text, or turn the ticker off." : null)}
+        >
+          {(v, set) => (
+            <div className="space-y-4">
+              <Toggle checked={v.enabled} onChange={(enabled) => set({ enabled })} label="Show notice ticker" description="When on, the notice scrolls across the top of every public page." />
+              <Field label="Notice text">
+                <Textarea
+                  rows={2}
+                  maxLength={500}
+                  value={v.text}
+                  placeholder="e.g. Diwali Sale is live — flat 20% off on all villa stays booked this week!"
+                  onChange={(e) => set({ text: e.target.value })}
+                />
+              </Field>
+              <Field label="Scroll speed" className="sm:max-w-xs">
+                <Select value={v.speed} onChange={(e) => set({ speed: e.target.value as NoticeSettings["speed"] })}>
+                  <option value="slow">Slow</option>
+                  <option value="normal">Normal</option>
+                  <option value="fast">Fast</option>
+                </Select>
+              </Field>
             </div>
           )}
         </SettingsBlock>

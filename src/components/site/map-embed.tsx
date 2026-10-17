@@ -1,9 +1,14 @@
 import { MapPin } from "lucide-react";
 import { cn } from "@/lib/cn";
 
-const GOOGLE_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
-
-/** Lightweight map: Google Maps embed when a key is configured, else OpenStreetMap. */
+/**
+ * Lightweight, self-contained location map.
+ *
+ * Always rendered as an inline OpenStreetMap embed so guests see *where* a
+ * property is without being handed off to Google Maps (which surfaces the
+ * business listing, phone number and reviews, letting people book around us).
+ * The embed shows only a pin at the property's coordinates.
+ */
 export function MapEmbed({
   lat,
   lng,
@@ -25,9 +30,7 @@ export function MapEmbed({
     );
   }
   const d = 0.012 * (15 / zoom);
-  const src = GOOGLE_KEY
-    ? `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_KEY}&q=${lat},${lng}&zoom=${zoom}`
-    : `https://www.openstreetmap.org/export/embed.html?bbox=${lng - d},${lat - d},${lng + d},${lat + d}&layer=mapnik&marker=${lat},${lng}`;
+  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - d},${lat - d},${lng + d},${lat + d}&layer=mapnik&marker=${lat},${lng}`;
   return (
     <div className={cn("overflow-hidden rounded-xl border border-line bg-surface-2", className)}>
       <iframe title={`Map showing ${label}`} src={src} className="h-full w-full" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />

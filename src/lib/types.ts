@@ -264,12 +264,15 @@ export type HomeAd = {
 
 export type HomePayload = { banners: Banner[]; sections: HomeSection[]; ads?: HomeAd[] };
 
+export type SiteNotice = { enabled: boolean; text: string; speed: "slow" | "normal" | "fast" };
+
 export type SiteMeta = {
   cities: CityLite[];
   propertyTypes: { value: PropertyType; label: string }[];
   travelTags: { value: TravelTag; label: string }[];
   amenities: Amenity[];
   support: { phone: string; email: string; whatsapp: string; social: Record<string, string> };
+  notice: SiteNotice;
 };
 
 export type CityPage = {

@@ -44,6 +44,7 @@ const EMPTY_META: SiteMeta = {
   travelTags: [],
   amenities: [],
   support: { phone: "", email: "", whatsapp: "", social: {} },
+  notice: { enabled: false, text: "", speed: "normal" },
 };
 
 /** Site-wide meta (cities, amenities, support). Deduped per request, cached 5 min. */

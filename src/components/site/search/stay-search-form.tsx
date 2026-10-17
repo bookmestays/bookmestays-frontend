@@ -2,13 +2,14 @@
 
 import { MapPin, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
 import { addDays, searchHref, stayQuery, todayISO, type SearchFilters } from "@/lib/search-params";
 import type { CityLite } from "@/lib/types";
 import { GuestPicker, type Guests } from "./guest-picker";
 import { SuggestList, useCombobox, useSuggest, type Suggestion } from "./suggest";
+import { buildSearchPhrases, useTypedPlaceholder } from "./use-typed-placeholder";
 
 type Props = {
   cities: CityLite[];
@@ -38,6 +39,9 @@ export function StaySearchForm({ cities, initial, initialWhere, variant = "hero"
   const [error, setError] = useState<string | null>(null);
 
   const { items, loading, heading } = useSuggest(text, cities);
+  const phrases = useMemo(() => buildSearchPhrases(cities), [cities]);
+  // Only animate while the field is empty (placeholder is hidden once the user types).
+  const typedPlaceholder = useTypedPlaceholder(phrases, text.trim() === "");
 
   const choose = (s: Suggestion) => {
     setError(null);
@@ -107,7 +111,7 @@ export function StaySearchForm({ cities, initial, initialWhere, variant = "hero"
             <input
               id={`where-${variant}`}
               autoComplete="off"
-              placeholder="City, area, property or landmark"
+              placeholder={typedPlaceholder}
               value={text}
               onChange={(e) => {
                 setText(e.target.value);
