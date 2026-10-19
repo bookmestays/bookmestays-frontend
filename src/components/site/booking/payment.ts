@@ -15,6 +15,15 @@ export function loadRazorpay(): Promise<RazorpayCtor> {
   const w = window as unknown as { Razorpay?: RazorpayCtor };
   if (w.Razorpay) return Promise.resolve(w.Razorpay);
   scriptPromise ??= new Promise<RazorpayCtor>((resolve, reject) => {
+    // Set up the connection to Razorpay early so the script (and later the modal) load faster.
+    if (!document.querySelector('link[data-rzp-preconnect]')) {
+      const pc = document.createElement("link");
+      pc.rel = "preconnect";
+      pc.href = "https://checkout.razorpay.com";
+      pc.crossOrigin = "anonymous";
+      pc.setAttribute("data-rzp-preconnect", "");
+      document.head.appendChild(pc);
+    }
     const s = document.createElement("script");
     s.src = "https://checkout.razorpay.com/v1/checkout.js";
     s.async = true;

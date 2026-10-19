@@ -16,7 +16,7 @@ import { SmartImage } from "../media/smart-image";
 import type { Selection } from "./selections";
 import { PolicyRules } from "../property/property-sections";
 import { HoldTimer, useCountdown } from "./hold-timer";
-import { isMockPayment, payWithRazorpay, simulateMockPayment } from "./payment";
+import { isMockPayment, loadRazorpay, payWithRazorpay, simulateMockPayment } from "./payment";
 
 export type CheckoutProperty = {
   id: string;
@@ -65,6 +65,12 @@ export function CheckoutFlow({
 
   const input: BookingInput = { propertyId: property.id, checkIn, checkOut, adults, children: childCount, rooms: selections };
   const inputKey = JSON.stringify(input);
+
+  // Warm up the Razorpay checkout script as soon as the page opens so the payment
+  // window appears instantly when the guest clicks "Pay" (instead of downloading it then).
+  useEffect(() => {
+    void loadRazorpay().catch(() => {});
+  }, []);
 
   // ─── Quote ───
   const [couponDraft, setCouponDraft] = useState("");
