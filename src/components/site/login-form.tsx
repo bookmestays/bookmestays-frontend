@@ -241,27 +241,47 @@ function PasswordForm({ onSuccess }: { onSuccess: (u: User) => void }) {
 }
 
 function SignupForm({ onSuccess }: { onSuccess: (u: User) => void }) {
+  const [step, setStep] = useState<"details" | "verify">("details");
   const [form, setForm] = useState({ name: "", email: "", phone: "", password: "" });
+  const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  async function submit(e: FormEvent) {
-    e.preventDefault();
+  // Resent on verify too, so the account is created with exactly the details we validated here.
+  const payload = () => ({
+    name: form.name.trim(),
+    email: form.email.trim().toLowerCase(),
+    phone: form.phone.trim() ? normaliseTarget(form.phone) : undefined,
+    password: form.password,
+  });
+
+  async function requestCode(e?: FormEvent) {
+    e?.preventDefault();
     if (form.name.trim().length < 2) return setError("Please enter your name.");
     if (!isValidEmail(form.email.trim())) return setError("Please enter a valid email address.");
     if (form.password.length < 8) return setError("Password must be at least 8 characters.");
     setBusy(true);
     setError(null);
     try {
-      const res = await api<AuthResponse>("/auth/register", {
+      await api<{ verify: boolean; email: string }>("/auth/register", { method: "POST", body: payload() });
+      setStep("verify");
+    } catch (err) {
+      setError(errMsg(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function verify(e: FormEvent) {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(code.trim())) return setError("Enter the 6-digit code we emailed you.");
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await api<AuthResponse>("/auth/register/verify", {
         method: "POST",
-        body: {
-          name: form.name.trim(),
-          email: form.email.trim().toLowerCase(),
-          phone: form.phone.trim() ? normaliseTarget(form.phone) : undefined,
-          password: form.password,
-        },
+        body: { ...payload(), code: code.trim() },
       });
       onSuccess(res.user);
     } catch (err) {
@@ -271,13 +291,53 @@ function SignupForm({ onSuccess }: { onSuccess: (u: User) => void }) {
     }
   }
 
+  if (step === "verify") {
+    return (
+      <form onSubmit={verify} className="flex flex-col gap-4" noValidate>
+        <button
+          type="button"
+          onClick={() => {
+            setStep("details");
+            setError(null);
+          }}
+          className="inline-flex items-center gap-1 self-start text-sm text-muted hover:text-ink"
+        >
+          <ArrowLeft className="size-4" aria-hidden /> {form.email.trim().toLowerCase()}
+        </button>
+        <p className="text-sm text-muted">
+          We&apos;ve emailed a 6-digit code to verify your email. Enter it to finish creating your account. Check your spam folder if it
+          doesn&apos;t arrive.
+        </p>
+        <Field label="Verification code" error={error}>
+          <Input
+            autoFocus
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            placeholder="Enter code"
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+            aria-invalid={!!error}
+            className="tracking-[0.3em]"
+          />
+        </Field>
+        <Button type="submit" size="lg" loading={busy}>
+          Verify &amp; create account
+        </Button>
+        <button type="button" onClick={() => requestCode()} disabled={busy} className="text-sm font-medium text-brand hover:underline disabled:opacity-50">
+          Resend code
+        </button>
+      </form>
+    );
+  }
+
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
+    <form onSubmit={requestCode} className="flex flex-col gap-4" noValidate>
       <h3 className="text-base font-semibold text-ink">Create your account</h3>
       <Field label="Full name" required>
         <Input autoFocus autoComplete="name" value={form.name} onChange={set("name")} />
       </Field>
-      <Field label="Email" required>
+      <Field label="Email" required hint="We'll email you a code to verify it.">
         <Input type="email" autoComplete="email" value={form.email} onChange={set("email")} />
       </Field>
       <Field label="Mobile number" hint="For booking updates">
@@ -287,7 +347,7 @@ function SignupForm({ onSuccess }: { onSuccess: (u: User) => void }) {
         <Input type="password" autoComplete="new-password" value={form.password} onChange={set("password")} />
       </Field>
       <Button type="submit" size="lg" loading={busy}>
-        Create account
+        Continue
       </Button>
     </form>
   );
