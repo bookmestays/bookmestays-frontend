@@ -51,11 +51,11 @@ export default function AdminSettlementPage() {
                       <PauseCircle className="size-4" /> Hold
                     </Button>
                   )}
-                  <Button variant="outline" size="sm" onClick={() => setAction("paid")}>
-                    <Banknote className="size-4" /> Mark paid (UTR)
+                  <Button variant="outline" size="sm" onClick={() => setAction("approve")}>
+                    <CheckCircle2 className="size-4" /> Approve & pay (Razorpay)
                   </Button>
-                  <Button size="sm" onClick={() => setAction("approve")}>
-                    <CheckCircle2 className="size-4" /> Approve & pay
+                  <Button size="sm" onClick={() => setAction("paid")}>
+                    <Banknote className="size-4" /> Mark paid (bank transfer)
                   </Button>
                 </>
               )

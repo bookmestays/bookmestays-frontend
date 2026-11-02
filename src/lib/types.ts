@@ -10,6 +10,13 @@ export type MealPlan = "EP" | "CP" | "MAP" | "AP";
 export type CommissionType = "PERCENT" | "FLAT";
 export type SettlementCycle = "WEEKLY" | "BIWEEKLY" | "MONTHLY" | "AFTER_CHECKOUT";
 export type KycStatus = "PENDING" | "SUBMITTED" | "VERIFIED" | "REJECTED";
+export type PayoutStatus =
+  | "DETAILS_INCOMPLETE"
+  | "KYC_REJECTED"
+  | "KYC_PENDING"
+  | "READY_TO_SETUP"
+  | "PENDING_ACTIVATION"
+  | "ACTIVE";
 export type MediaOwnerType = "PROPERTY" | "ROOM_TYPE" | "NEARBY_PLACE" | "EXPERIENCE" | "CITY" | "COLLECTION" | "BANNER" | "TESTIMONIAL";
 export type MediaKind = "IMAGE" | "VIDEO";
 export type MediaTag =
@@ -433,6 +440,9 @@ export type PartnerDetail = PartnerSummary & {
   bankIfsc: string | null;
   kycNotes: string | null;
   razorpayLinkedAccountId: string | null;
+  payoutStatus: PayoutStatus;
+  payoutsActivatedAt: string | null;
+  hasLinkedAccount: boolean;
   settlementDayOfWeek: number | null;
   settlementDayOfMonth: number | null;
   settlementDelayDays: number;
@@ -444,6 +454,25 @@ export type PartnerDetail = PartnerSummary & {
 };
 
 export type PartnerProfile = Omit<PartnerDetail, "users" | "properties" | "razorpayLinkedAccountId">;
+
+export type ReportMetrics = {
+  bookings: number;
+  gmv: number;
+  roomRevenue: number;
+  commission: number;
+  commissionTax: number;
+  commissionTotal: number; // commission + GST on commission = our earning
+  taxesCollected: number; // TCS + TDS
+  hotelPayout: number;
+};
+
+export type AdminReport = {
+  range: { from: string; to: string; groupBy: "week" | "month" };
+  summary: ReportMetrics;
+  buckets: (ReportMetrics & { period: string })[];
+  perPartner: (ReportMetrics & { partnerId: string; partnerName: string })[];
+  payouts: { paidToHotels: number; outstandingToHotels: number };
+};
 
 export type CreatePartnerInput = {
   legalName: string;

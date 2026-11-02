@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import {
   BadgeCheck,
+  BarChart3,
   Building2,
   CalendarCheck,
   ClipboardList,
@@ -40,6 +41,7 @@ const NAV: NavGroup[] = [
       { href: "/admin/properties", label: "Properties", icon: Building2 },
       { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
       { href: "/admin/settlements", label: "Settlements", icon: Wallet },
+      { href: "/admin/reports", label: "Reports", icon: BarChart3 },
       { href: "/admin/channel-managers", label: "Channel managers", icon: Cable },
       { href: "/admin/reviews", label: "Reviews", icon: MessageSquareText },
       { href: "/admin/coupons", label: "Coupons", icon: TicketPercent },
