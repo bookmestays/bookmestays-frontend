@@ -1,4 +1,4 @@
-import { CheckCircle2, MapPin } from "lucide-react";
+import { CheckCircle2, Clock, MapPin } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -125,6 +125,7 @@ export default async function PropertyPage(props: PageProps<"/stays/[slug]">) {
       slug={p.slug}
       propertyId={p.id}
       propertyName={p.name}
+      comingSoon={p.isComingSoon}
       initial={{ checkIn: f.checkIn ?? "", checkOut: f.checkOut ?? "", adults: f.adults, children: f.children, rooms: f.rooms }}
     >
       <JsonLd data={propertyJsonLd(p)} />
@@ -174,6 +175,16 @@ export default async function PropertyPage(props: PageProps<"/stays/[slug]">) {
                 </div>
               </div>
 
+              {p.isComingSoon && (
+                <div className="mt-5 flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-ink-2">
+                  <Clock className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden />
+                  <p>
+                    <strong className="text-ink">Coming soon.</strong> This stay is launching shortly. You can explore everything about
+                    it below — photos, rooms, amenities and location — and booking will open here as soon as it’s available.
+                  </p>
+                </div>
+              )}
+
               {p.highlights.length > 0 && (
                 <ul className="mt-5 grid gap-2 sm:grid-cols-2" aria-label="Key highlights">
                   {p.highlights.map((h) => (
@@ -207,7 +218,11 @@ export default async function PropertyPage(props: PageProps<"/stays/[slug]">) {
               <SectionNav available={sectionsAvailable} />
             </div>
 
-            <DetailSection id="rooms" title="Rooms & stay options" subtitle="Choose your dates to see live prices, availability and cancellation terms.">
+            <DetailSection
+              id="rooms"
+              title="Rooms & stay options"
+              subtitle={p.isComingSoon ? "Preview the rooms and rates — booking opens once this stay goes live." : "Choose your dates to see live prices, availability and cancellation terms."}
+            >
               <RoomsSection roomTypes={p.roomTypes} />
             </DetailSection>
 

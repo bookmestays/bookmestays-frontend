@@ -11,11 +11,11 @@ import { SeoFields } from "@/components/panel/seo-fields";
 import { sameJson, useUnsavedChanges } from "@/components/panel/unsaved";
 import { slugify } from "@/components/panel/util";
 
-type State = { isFeatured: boolean; isRecommended: boolean; curationRank: number | null; slug: string; seo: Seo };
+type State = { isFeatured: boolean; isRecommended: boolean; isComingSoon: boolean; curationRank: number | null; slug: string; seo: Seo };
 
 export function CurationTab({ property, onUpdated }: { property: PartnerPropertyDetail; onUpdated: (p: PartnerPropertyDetail) => void }) {
   const toast = useToast();
-  const from = (p: PartnerPropertyDetail): State => ({ isFeatured: p.isFeatured, isRecommended: p.isRecommended, curationRank: p.curationRank ?? 0, slug: p.slug, seo: p.seo ?? {} });
+  const from = (p: PartnerPropertyDetail): State => ({ isFeatured: p.isFeatured, isRecommended: p.isRecommended, isComingSoon: p.isComingSoon, curationRank: p.curationRank ?? 0, slug: p.slug, seo: p.seo ?? {} });
   const [initial, setInitial] = useState(() => from(property));
   const [s, setS] = useState(initial);
   const [busy, setBusy] = useState(false);
@@ -34,7 +34,7 @@ export function CurationTab({ property, onUpdated }: { property: PartnerProperty
         try {
           const next = await api<PartnerPropertyDetail>(`/admin/properties/${property.id}`, {
             method: "PATCH",
-            body: { isFeatured: s.isFeatured, isRecommended: s.isRecommended, curationRank: s.curationRank ?? 0, ...(s.slug !== initial.slug ? { slug: s.slug } : {}), seo: Object.keys(s.seo).length ? s.seo : null },
+            body: { isFeatured: s.isFeatured, isRecommended: s.isRecommended, isComingSoon: s.isComingSoon, curationRank: s.curationRank ?? 0, ...(s.slug !== initial.slug ? { slug: s.slug } : {}), seo: Object.keys(s.seo).length ? s.seo : null },
           });
           const f = from(next);
           setInitial(f);
@@ -48,6 +48,21 @@ export function CurationTab({ property, onUpdated }: { property: PartnerProperty
         }
       }}
     >
+      <Section title="Availability" description="Coming-soon stays stay listed with full details, but guests can’t book them yet — the booking panel shows a “Coming soon” message instead. Turn this off when the property is ready to accept bookings.">
+        <div className="max-w-lg space-y-4">
+          <Toggle
+            label="Coming soon"
+            description="Listed on the site, but not yet open for bookings"
+            checked={s.isComingSoon}
+            onChange={(v) => setS({ ...s, isComingSoon: v })}
+          />
+          {s.isComingSoon && property.status !== "LIVE" && (
+            <p className="rounded-lg bg-warning/10 px-3 py-2 text-xs text-warning">
+              This property isn’t live yet, so it won’t appear on the site until it’s approved and published. Once live, it will show as “Coming soon”.
+            </p>
+          )}
+        </div>
+      </Section>
       <Section title="Homepage curation" description="Featured and recommended stays appear in their homepage sections, ordered by rank (lower first).">
         <div className="max-w-lg space-y-4">
           <Toggle label="Featured stay" description="Shown in the “Featured” section" checked={s.isFeatured} onChange={(v) => setS({ ...s, isFeatured: v })} />

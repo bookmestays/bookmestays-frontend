@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Clock, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { Button, Spinner } from "@/components/ui";
 import { cn } from "@/lib/cn";
@@ -56,11 +56,39 @@ function scrollToRooms() {
   document.getElementById("rooms")?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+/** Coming-soon card (desktop sidebar) — shown instead of the booking controls. */
+function ComingSoonWidget({ startingPrice }: { startingPrice: number | null }) {
+  return (
+    <div className="rounded-2xl border border-line bg-white p-5 shadow-lg">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/10 px-3 py-1 text-xs font-semibold text-warning">
+        <Clock className="size-3.5" aria-hidden /> Coming soon
+      </span>
+      <p className="mt-3 text-lg font-bold text-ink">Not open for bookings yet</p>
+      <p className="mt-1 text-sm text-ink-2">
+        This stay is launching soon. Explore the photos, rooms and amenities now — booking will open here shortly.
+      </p>
+      {startingPrice != null && (
+        <p className="mt-4 border-t border-line pt-4 text-sm text-muted">
+          Expected from <span className="text-base font-semibold text-ink">{formatINR(startingPrice)}</span> /night
+        </p>
+      )}
+      <Button variant="accent" size="lg" className="mt-4 w-full" disabled>
+        Coming soon
+      </Button>
+      <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted">
+        <ShieldCheck className="size-3.5 text-success" aria-hidden /> Secure prepaid booking once available
+      </p>
+    </div>
+  );
+}
+
 /** Sticky booking card (desktop sidebar). */
 export function BookingWidget({ startingPrice }: { startingPrice: number | null }) {
   const b = useBooking();
   const guests = b.stay.adults + b.stay.children;
   const capacityShort = b.totals.rooms > 0 && b.totals.capacity < guests;
+
+  if (b.comingSoon) return <ComingSoonWidget startingPrice={startingPrice} />;
 
   return (
     <div className="rounded-2xl border border-line bg-white p-5 shadow-lg">
@@ -149,6 +177,27 @@ export function MobileBookingBar({ startingPrice }: { startingPrice: number | nu
   const b = useBooking();
   const guests = b.stay.adults + b.stay.children;
   const capacityShort = b.totals.rooms > 0 && b.totals.capacity < guests;
+
+  if (b.comingSoon) {
+    return (
+      <div className="mobile-book-bar fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="flex items-center gap-1.5 text-sm font-bold text-ink">
+              <Clock className="size-4 text-warning" aria-hidden /> Coming soon
+            </p>
+            <p className="truncate text-xs text-muted">
+              {startingPrice != null ? `Expected from ${formatINR(startingPrice)} /night` : "Not open for bookings yet"}
+            </p>
+          </div>
+          <Button variant="accent" size="lg" disabled>
+            Coming soon
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mobile-book-bar fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] backdrop-blur lg:hidden">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">

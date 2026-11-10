@@ -1,6 +1,6 @@
 "use client";
 
-import { BedDouble, Check, Eye, Maximize, PlayCircle, RefreshCw, Users, Utensils, X } from "lucide-react";
+import { BedDouble, Check, Clock, Eye, Maximize, PlayCircle, RefreshCw, Users, Utensils, X } from "lucide-react";
 import { useState } from "react";
 import { Badge, Button, Skeleton } from "@/components/ui";
 import { cn } from "@/lib/cn";
@@ -175,7 +175,21 @@ function RoomCard({ rt }: { rt: RoomType }) {
       </div>
 
       <div className="border-t border-line">
-        {!b.hasDates ? (
+        {b.comingSoon ? (
+          <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-lg font-bold text-ink">
+                <span className="text-xs font-normal text-muted">Expected from </span>
+                {formatINR(minBase)}
+                <span className="text-xs font-normal text-muted"> /night</span>
+              </p>
+              <p className="text-xs text-muted">
+                {rt.ratePlans.filter((p) => p.isActive).length || 1} rate option{rt.ratePlans.length === 1 ? "" : "s"} · Booking opens soon
+              </p>
+            </div>
+            <Badge tone="warning">Coming soon</Badge>
+          </div>
+        ) : !b.hasDates ? (
           <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-lg font-bold text-ink">
@@ -218,6 +232,25 @@ export function RoomsSection({ roomTypes }: { roomTypes: RoomType[] }) {
   const allSoldOut =
     b.availability && b.availability.roomTypes.every((r) => r.ratePlans.every((p) => !p.bookable || p.available < 1));
   const sorted = [...roomTypes].sort((a, b2) => a.sort - b2.sort);
+
+  if (b.comingSoon) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-start gap-3 rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-ink-2">
+          <Clock className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden />
+          <p>
+            <strong className="text-ink">This stay is coming soon.</strong> Browse the rooms and rates below — booking isn’t open
+            yet, but it will be here soon.
+          </p>
+        </div>
+        {sorted.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-line p-6 text-center text-sm text-muted">Room details are coming soon for this property.</p>
+        ) : (
+          sorted.map((rt) => <RoomCard key={rt.id} rt={rt} />)
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

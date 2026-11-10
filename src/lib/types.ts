@@ -92,6 +92,7 @@ export type PropertyCard = {
   amenities: { code: string; name: string; icon: string | null }[]; // top 4
   isGold: boolean; // auto-awarded "Gold" performance badge
   isRising: boolean; // auto-awarded "Rising" performance badge
+  isComingSoon: boolean; // listed with full details but not yet open for booking
   lat: number | null;
   lng: number | null;
 };
@@ -530,6 +531,7 @@ export type AdminPropertyRow = {
   pendingRoomTypes: number;
   isFeatured: boolean;
   isRecommended: boolean;
+  isComingSoon: boolean;
   curationRank: number;
   completedBookings: number; // stays that finished
   cancelledBookings: number; // cancelled + no-show

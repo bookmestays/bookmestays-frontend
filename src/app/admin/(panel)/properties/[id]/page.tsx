@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { Ban, CheckCircle2, ExternalLink, RotateCcw, XCircle } from "lucide-react";
+import { Ban, CheckCircle2, Clock, ExternalLink, RotateCcw, XCircle } from "lucide-react";
 import { api } from "@/lib/api";
 import { useApi } from "@/lib/use-api";
 import { PROPERTY_TYPE_LABELS, type PartnerPropertyDetail } from "@/lib/types";
@@ -54,6 +54,11 @@ export default function AdminPropertyPage() {
             meta={
               <>
                 <StatusBadge kind="property" status={p.status} />
+                {p.isComingSoon && (
+                  <Badge tone="warning">
+                    <Clock className="size-3.5" /> Coming soon
+                  </Badge>
+                )}
                 {p.channelManaged && <Badge tone="info">Channel managed</Badge>}
               </>
             }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Crown, MapPin, PlayCircle, Star, TrendingUp } from "lucide-react";
+import { Clock, Crown, MapPin, PlayCircle, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { track } from "@/lib/analytics";
@@ -33,6 +33,21 @@ export function TierBadge({ tier, className }: { tier: "GOLD" | "RISING"; classN
     >
       <Icon className="size-3" aria-hidden />
       {gold ? "Gold" : "Rising"}
+    </span>
+  );
+}
+
+/** "Coming soon" pill shown on cards for stays that are listed but not yet bookable. */
+export function ComingSoonBadge({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 rounded-full bg-amber-500 px-2 py-1 text-[11px] font-bold tracking-wide text-white shadow-sm ring-1 ring-amber-300/50 backdrop-blur",
+        className,
+      )}
+    >
+      <Clock className="size-3" aria-hidden />
+      Coming soon
     </span>
   );
 }
@@ -80,6 +95,7 @@ export function PropertyPosterCard({ p, query = "", eager, className }: { p: Pro
         <Media p={p} hovered={hovered} sizes="(max-width: 640px) 46vw, (max-width: 1024px) 30vw, 240px" eager={eager} />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute top-2 left-2 flex flex-col items-start gap-1">
+          {p.isComingSoon && <ComingSoonBadge />}
           {tier && <TierBadge tier={tier} />}
           <span className="rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-ink shadow-sm backdrop-blur">
             {TYPE_SINGULAR[p.type]}
@@ -127,7 +143,10 @@ export function PropertyListCard({ p, query = "", eager }: { p: PropertyCardDTO;
     >
       <div className="relative aspect-[16/10] shrink-0 overflow-hidden bg-surface-2 sm:aspect-auto sm:w-72 lg:w-80">
         <Media p={p} hovered={hovered} sizes="(max-width: 640px) 100vw, 320px" eager={eager} />
-        {tier && <TierBadge tier={tier} className="absolute top-2 left-2 z-10" />}
+        <div className="absolute top-2 left-2 z-10 flex flex-col items-start gap-1">
+          {p.isComingSoon && <ComingSoonBadge />}
+          {tier && <TierBadge tier={tier} />}
+        </div>
         <WishlistButton type="PROPERTY" id={p.id} name={p.name} className="absolute top-2 right-2 z-10" />
         {p.previewVideoUrl && (
           <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white">

@@ -19,6 +19,7 @@ type Ctx = {
   slug: string;
   propertyId: string;
   propertyName: string;
+  comingSoon: boolean;
   stay: StayState;
   setStay: (patch: Partial<StayState>) => void;
   hasDates: boolean;
@@ -46,12 +47,14 @@ export function BookingProvider({
   slug,
   propertyId,
   propertyName,
+  comingSoon = false,
   initial,
   children,
 }: {
   slug: string;
   propertyId: string;
   propertyName: string;
+  comingSoon?: boolean;
   initial: StayState;
   children: ReactNode;
 }) {
@@ -63,7 +66,8 @@ export function BookingProvider({
   const [selections, setSelections] = useState<Record<string, Selection>>({});
   const [reserving, setReserving] = useState(false);
 
-  const hasDates = !!stay.checkIn && !!stay.checkOut && stay.checkOut > stay.checkIn;
+  // Coming-soon stays are listed but not bookable, so we never query availability for them.
+  const hasDates = !comingSoon && !!stay.checkIn && !!stay.checkOut && stay.checkOut > stay.checkIn;
   const key = hasDates ? `${stay.checkIn}|${stay.checkOut}|${stay.adults}|${stay.children}|${stay.rooms}|${attempt}` : "";
 
   useEffect(() => {
@@ -163,6 +167,7 @@ export function BookingProvider({
     slug,
     propertyId,
     propertyName,
+    comingSoon,
     stay,
     setStay,
     hasDates,

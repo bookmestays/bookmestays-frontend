@@ -1,6 +1,6 @@
 "use client";
 
-import { Cable, Star, ThumbsUp } from "lucide-react";
+import { Cable, Clock, Star, ThumbsUp } from "lucide-react";
 import { PropertyThumb } from "@/components/panel/property-thumb";
 import { formatDate, formatINR } from "@/lib/format";
 import { PROPERTY_TYPE_LABELS, type AdminPropertyRow } from "@/lib/types";
@@ -28,6 +28,11 @@ export function propertyColumns({ showPartner = true }: { showPartner?: boolean 
               {p.isRecommended && (
                 <Badge tone="info" className="px-1.5 py-0">
                   <ThumbsUp className="size-3" /> Recommended
+                </Badge>
+              )}
+              {p.isComingSoon && (
+                <Badge tone="warning" className="px-1.5 py-0">
+                  <Clock className="size-3" /> Coming soon
                 </Badge>
               )}
             </p>
