@@ -108,6 +108,17 @@ export type NearbyPlace = {
   media: Media[];
 };
 
+/** Recurring per-weekday nightly price overrides (paise); a missing/null day uses basePrice. */
+export type WeekdayPrices = {
+  sun?: number | null;
+  mon?: number | null;
+  tue?: number | null;
+  wed?: number | null;
+  thu?: number | null;
+  fri?: number | null;
+  sat?: number | null;
+};
+
 export type RatePlan = {
   id: string;
   roomTypeId: string;
@@ -117,6 +128,7 @@ export type RatePlan = {
   isRefundable: boolean;
   cancellationPolicy: CancellationPolicy | null;
   basePrice: number;
+  weekdayPrices: WeekdayPrices | null;
   extraAdultPrice: number;
   extraChildPrice: number;
   isActive: boolean;

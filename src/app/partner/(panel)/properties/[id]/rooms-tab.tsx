@@ -5,7 +5,7 @@ import { BedDouble, Pencil, Plus, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { errorMessage } from "@/lib/use-api";
 import { formatINR } from "@/lib/format";
-import { MEAL_PLAN_LABELS, type CancellationPolicy, type MealPlan, type PartnerPropertyDetail, type RatePlan, type RoomType } from "@/lib/types";
+import { MEAL_PLAN_LABELS, type CancellationPolicy, type MealPlan, type PartnerPropertyDetail, type RatePlan, type RoomType, type WeekdayPrices } from "@/lib/types";
 import { Badge, Button, Card, Checkbox, EmptyState, Field, Input, Modal, Select, Textarea, useToast } from "@/components/ui";
 import { StatusBadge } from "@/components/panel/status-badge";
 import { ConfirmDialog } from "@/components/panel/confirm-dialog";
@@ -89,6 +89,7 @@ export function RoomsTab({
                         <p className="font-medium text-ink">
                           {rp.name} {!rp.isActive && <Badge className="ml-1">Inactive</Badge>}
                           {!rp.isRefundable && <Badge tone="danger" className="ml-1">Non-refundable</Badge>}
+                          {rp.weekdayPrices && <Badge className="ml-1">Weekday pricing</Badge>}
                         </p>
                         <p className="text-xs text-muted">
                           {MEAL_PLAN_LABELS[rp.mealPlan]}
@@ -318,6 +319,72 @@ export function RoomTypeForm({
   );
 }
 
+const WEEKDAY_DAYS: { key: keyof WeekdayPrices; short: string }[] = [
+  { key: "mon", short: "Mon" },
+  { key: "tue", short: "Tue" },
+  { key: "wed", short: "Wed" },
+  { key: "thu", short: "Thu" },
+  { key: "fri", short: "Fri" },
+  { key: "sat", short: "Sat" },
+  { key: "sun", short: "Sun" },
+];
+const WEEKDAY_GROUP: (keyof WeekdayPrices)[] = ["mon", "tue", "wed", "thu", "fri"];
+const WEEKEND_GROUP: (keyof WeekdayPrices)[] = ["sat", "sun"];
+
+/** Reads the shared value for a group of days, or null when they differ (so the input shows blank). */
+function groupValue(prices: WeekdayPrices, days: (keyof WeekdayPrices)[]): number | null {
+  const vals = days.map((d) => prices[d] ?? null);
+  return vals.every((v) => v === vals[0]) ? (vals[0] ?? null) : null;
+}
+
+/**
+ * Recurring weekday vs weekend pricing. Partners set a "weekdays (Mon–Fri)" and a
+ * "weekend (Sat–Sun)" price, and can optionally fine-tune each day. Any day left blank
+ * falls back to the plan's base nightly price.
+ */
+function WeekdayPriceEditor({ value, basePrice, onChange }: { value: WeekdayPrices; basePrice: number | null; onChange: (v: WeekdayPrices) => void }) {
+  const [perDay, setPerDay] = useState(() => {
+    // Start in per-day mode only when the days within a group already differ.
+    const wk = WEEKDAY_GROUP.map((d) => value[d] ?? null);
+    const we = WEEKEND_GROUP.map((d) => value[d] ?? null);
+    return !wk.every((v) => v === wk[0]) || !we.every((v) => v === we[0]);
+  });
+  const setDays = (days: (keyof WeekdayPrices)[], v: number | null) => {
+    const next = { ...value };
+    for (const d of days) next[d] = v;
+    onChange(next);
+  };
+  const baseHint = basePrice ? formatINR(basePrice) : "base price";
+  return (
+    <div className="space-y-3 rounded-lg border border-line bg-surface-2 p-3">
+      {!perDay ? (
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Weekdays (Mon–Fri)" hint={`Blank → ${baseHint}`}>
+            <MoneyInput value={groupValue(value, WEEKDAY_GROUP)} onChange={(v) => setDays(WEEKDAY_GROUP, v)} />
+          </Field>
+          <Field label="Weekend (Sat–Sun)" hint={`Blank → ${baseHint}`}>
+            <MoneyInput value={groupValue(value, WEEKEND_GROUP)} onChange={(v) => setDays(WEEKEND_GROUP, v)} />
+          </Field>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 sm:grid-cols-4">
+          {WEEKDAY_DAYS.map((d) => (
+            <Field key={d.key} label={d.short}>
+              <MoneyInput value={value[d.key] ?? null} onChange={(v) => onChange({ ...value, [d.key]: v })} />
+            </Field>
+          ))}
+        </div>
+      )}
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted">Leave a day blank to charge the base nightly price. Calendar overrides still win for specific dates.</p>
+        <button type="button" className="shrink-0 text-xs font-medium text-brand hover:underline" onClick={() => setPerDay((x) => !x)}>
+          {perDay ? "Use weekday / weekend" : "Set each day"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function RatePlanForm({
   room,
   plan,
@@ -342,6 +409,8 @@ export function RatePlanForm({
     override: !!plan?.cancellationPolicy,
     cancellationPolicy: plan?.cancellationPolicy ?? propertyPolicy ?? { summary: "", rules: [] },
     basePrice: (plan?.basePrice ?? room.basePrice ?? null) as number | null,
+    weekdayEnabled: !!plan?.weekdayPrices,
+    weekdayPrices: (plan?.weekdayPrices ?? {}) as WeekdayPrices,
     extraAdultPrice: plan?.extraAdultPrice ?? 0,
     extraChildPrice: plan?.extraChildPrice ?? 0,
     isActive: plan?.isActive ?? true,
@@ -371,6 +440,7 @@ export function RatePlanForm({
             isRefundable: f.isRefundable,
             cancellationPolicy: !f.isRefundable ? { summary: "Non-refundable. No refund on cancellation or no-show.", rules: [{ hoursBeforeCheckIn: 0, refundPercent: 0 }] } : f.override ? f.cancellationPolicy : null,
             basePrice: f.basePrice,
+            weekdayPrices: f.weekdayEnabled ? f.weekdayPrices : null,
             extraAdultPrice: f.extraAdultPrice ?? 0,
             extraChildPrice: f.extraChildPrice ?? 0,
             isActive: f.isActive,
@@ -408,6 +478,15 @@ export function RatePlanForm({
           <Field label="Extra child / night">
             <MoneyInput value={f.extraChildPrice} onChange={(v) => set({ extraChildPrice: v ?? 0 })} />
           </Field>
+        </div>
+        <div className="space-y-3 sm:col-span-2">
+          <Toggle
+            label="Different prices for weekdays & weekends"
+            description="Charge more (or less) on certain days — applies to every week automatically"
+            checked={f.weekdayEnabled}
+            onChange={(v) => set({ weekdayEnabled: v })}
+          />
+          {f.weekdayEnabled && <WeekdayPriceEditor value={f.weekdayPrices} basePrice={f.basePrice} onChange={(v) => set({ weekdayPrices: v })} />}
         </div>
         <div className="sm:col-span-2">
           <p className="mb-2 text-sm font-medium text-ink">Inclusions</p>
