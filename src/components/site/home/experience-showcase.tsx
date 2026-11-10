@@ -58,9 +58,14 @@ export function ExperienceShowcase({ title, subtitle, items }: { title: string; 
       <Container className="grid min-h-[600px] gap-8 py-10 sm:py-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,480px)] lg:items-end lg:gap-12">
         {/* Selected experience */}
         <div className="flex flex-col justify-end lg:pb-2" aria-live="polite">
-          <p className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold tracking-wide uppercase backdrop-blur">
-            <Sparkles className="size-3.5 text-accent" aria-hidden /> Experience{e.cityName ? ` · ${e.cityName}` : ""}
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold tracking-wide uppercase backdrop-blur">
+              <Sparkles className="size-3.5 text-accent" aria-hidden /> Experience{e.cityName ? ` · ${e.cityName}` : ""}
+            </p>
+            <p className="inline-flex w-fit items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1 text-xs font-semibold tracking-wide text-white uppercase shadow-sm">
+              <Clock className="size-3.5" aria-hidden /> Coming soon
+            </p>
+          </div>
           <h3 key={e.id} className="mt-3 max-w-xl animate-[fade-up_0.6s_ease-out] font-display text-3xl leading-tight font-bold sm:text-4xl lg:text-5xl">
             {e.title}
           </h3>
@@ -124,9 +129,14 @@ export function ExperienceShowcase({ title, subtitle, items }: { title: string; 
 
         {/* Frosted list panel */}
         <div className="rounded-3xl border border-white/15 bg-black/40 p-5 shadow-2xl backdrop-blur-md sm:p-7">
-          <h2 id="experiences-title" className="font-display text-2xl font-bold sm:text-3xl">
-            {title}
-          </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 id="experiences-title" className="font-display text-2xl font-bold sm:text-3xl">
+              {title}
+            </h2>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-2.5 py-1 text-[11px] font-bold tracking-wide text-white uppercase shadow-sm">
+              <Clock className="size-3" aria-hidden /> Coming soon
+            </span>
+          </div>
           <p className="mt-1.5 text-sm text-white/80">{subtitle ?? "Pair your stay with local food, culture and adventure — hosted by people who know the place."}</p>
           <ul className="mt-5 grid grid-cols-3 gap-1.5 sm:gap-2.5">
             {list.map((x, i) => (
