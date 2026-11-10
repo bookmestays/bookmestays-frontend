@@ -13,6 +13,7 @@ import { ShareButton, TrackView } from "@/components/site/property/property-clie
 import { ScrollRow } from "@/components/site/scroll-row";
 import { WishlistButton } from "@/components/site/wishlist-context";
 import { Card, ErrorState } from "@/components/ui";
+import { formatINR } from "@/lib/format";
 import { loadPublic, SITE_URL } from "@/lib/public-data";
 import type { ExperienceDetail } from "@/lib/types";
 
@@ -101,6 +102,16 @@ export default async function ExperiencePage(props: PageProps<"/experiences/[slu
               <WishlistButton type="EXPERIENCE" id={e.id} name={e.title} variant="plain" />
             </div>
           </div>
+
+          {e.isComingSoon && (
+            <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-ink-2">
+              <Clock className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden />
+              <p>
+                <strong className="text-ink">Coming soon.</strong> This experience is launching shortly. Explore everything about it
+                below — it will be available to book here as soon as it goes live.
+              </p>
+            </div>
+          )}
 
           {e.shortDescription && <p className="text-base font-medium text-ink">{e.shortDescription}</p>}
           {e.story && (
@@ -195,16 +206,34 @@ export default async function ExperiencePage(props: PageProps<"/experiences/[slu
 
         <aside aria-label="Booking information">
           <Card className="sticky top-4 space-y-3 p-5">
-            {e.price != null ? <PriceTag paise={e.price} suffix="/person" /> : <p className="text-sm text-muted">Price on request</p>}
-            {e.availabilityNote && <p className="text-sm text-ink-2">{e.availabilityNote}</p>}
-            {e.isBookable ? (
-              <p className="rounded-lg bg-success/10 p-3 text-sm text-ink-2">
-                This experience can be added to your stay. Contact our team after booking and we&apos;ll arrange it for your dates.
-              </p>
+            {e.isComingSoon ? (
+              <>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/10 px-3 py-1 text-xs font-semibold text-warning">
+                  <Clock className="size-3.5" aria-hidden /> Coming soon
+                </span>
+                {e.price != null && (
+                  <p className="text-sm text-muted">
+                    Expected from <span className="text-base font-semibold text-ink">{formatINR(e.price)}</span> /person
+                  </p>
+                )}
+                <p className="rounded-lg bg-warning/10 p-3 text-sm text-ink-2">
+                  This experience is launching soon. Explore the details below — it will be available to book here shortly.
+                </p>
+              </>
             ) : (
-              <p className="rounded-lg bg-surface-2 p-3 text-sm text-ink-2">
-                Online booking for experiences is coming soon. Book a nearby stay and our team can help you arrange it.
-              </p>
+              <>
+                {e.price != null ? <PriceTag paise={e.price} suffix="/person" /> : <p className="text-sm text-muted">Price on request</p>}
+                {e.availabilityNote && <p className="text-sm text-ink-2">{e.availabilityNote}</p>}
+                {e.isBookable ? (
+                  <p className="rounded-lg bg-success/10 p-3 text-sm text-ink-2">
+                    This experience can be added to your stay. Contact our team after booking and we&apos;ll arrange it for your dates.
+                  </p>
+                ) : (
+                  <p className="rounded-lg bg-surface-2 p-3 text-sm text-ink-2">
+                    Online booking for experiences is coming soon. Book a nearby stay and our team can help you arrange it.
+                  </p>
+                )}
+              </>
             )}
             <Link href="/help#booking-support" className="inline-block text-sm font-medium text-brand hover:underline">
               Ask about this experience

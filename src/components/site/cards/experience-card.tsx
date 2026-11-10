@@ -35,8 +35,14 @@ export function ExperienceCard({ e, className }: { e: ExperienceCardDTO; classNa
           <SmartImage src={e.coverImageUrl} alt={e.title} fill sizes="(max-width: 640px) 82vw, 320px" className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
         )}
         <WishlistButton type="EXPERIENCE" id={e.id} name={e.title} className="absolute top-2 right-2 z-10" />
-        {e.isBookable && (
-          <span className="absolute top-2 left-2 rounded-md bg-success px-2 py-0.5 text-[11px] font-semibold text-white">Bookable</span>
+        {e.isComingSoon ? (
+          <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-md bg-amber-500 px-2 py-0.5 text-[11px] font-semibold text-white">
+            <Clock className="size-3" aria-hidden /> Coming soon
+          </span>
+        ) : (
+          e.isBookable && (
+            <span className="absolute top-2 left-2 rounded-md bg-success px-2 py-0.5 text-[11px] font-semibold text-white">Bookable</span>
+          )
         )}
       </div>
       <div className="mt-2.5 flex flex-col gap-1">

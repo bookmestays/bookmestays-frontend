@@ -42,7 +42,16 @@ export default function ExperiencesPage() {
         },
         { key: "duration", header: "Duration", cell: (x) => (x.durationMinutes ? `${Math.round(x.durationMinutes / 6) / 10} h` : "—"), hideBelow: "sm" },
         { key: "price", header: "Price", cell: (x) => formatINR(x.price), align: "right", sortValue: (x) => x.price },
-        { key: "status", header: "Status", cell: (x) => (x.isActive ? <Badge tone="success">Active</Badge> : <Badge>Hidden</Badge>) },
+        {
+          key: "status",
+          header: "Status",
+          cell: (x) => (
+            <span className="inline-flex flex-wrap gap-1">
+              {x.isActive ? <Badge tone="success">Active</Badge> : <Badge>Hidden</Badge>}
+              {x.isComingSoon && <Badge tone="warning">Coming soon</Badge>}
+            </span>
+          ),
+        },
       ]}
       Form={ExperienceForm}
     />
@@ -74,6 +83,7 @@ function ExperienceForm({ item, onCancel, onSaved }: CrudFormProps<AdminExperien
     availabilityNote: item?.availabilityNote ?? "",
     coverImageUrl: item?.coverImageUrl ?? null,
     isActive: item?.isActive ?? true,
+    isComingSoon: item?.isComingSoon ?? false,
     sort: item?.sort ?? 0,
     seo: item?.seo ?? {},
   });
@@ -111,6 +121,7 @@ function ExperienceForm({ item, onCancel, onSaved }: CrudFormProps<AdminExperien
           availabilityNote: nullIfEmpty(f.availabilityNote),
           coverImageUrl: f.coverImageUrl,
           isActive: f.isActive,
+          isComingSoon: f.isComingSoon,
           sort: f.sort ?? 0,
           seo: Object.keys(f.seo).length ? f.seo : null,
         });
@@ -207,6 +218,7 @@ function ExperienceForm({ item, onCancel, onSaved }: CrudFormProps<AdminExperien
             <NumberInput value={f.sort} onChange={(v) => set({ sort: v ?? 0 })} />
           </Field>
           <Toggle label="Active" checked={f.isActive} onChange={(v) => set({ isActive: v })} />
+          <Toggle label="Coming soon" description="Listed with full details, shown as “Coming soon” and not yet available" checked={f.isComingSoon} onChange={(v) => set({ isComingSoon: v })} />
         </div>
       )}
       {tab === "media" && item && <MediaManager ownerType="EXPERIENCE" ownerId={item.id} tags={["EXPERIENCE", "SURROUNDINGS", "VIEW", "OTHER"]} defaultTag="EXPERIENCE" />}

@@ -192,6 +192,7 @@ export type ExperienceCard = {
   ratingAvg: number;
   ratingCount: number;
   isBookable: boolean;
+  isComingSoon: boolean; // listed with full details but not yet available
 };
 export type ExperienceDetail = ExperienceCard & {
   story: string | null;

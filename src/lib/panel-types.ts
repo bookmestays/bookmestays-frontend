@@ -99,6 +99,7 @@ export type AdminExperience = {
   hostInfo: string | null;
   availabilityNote: string | null;
   isBookable: boolean;
+  isComingSoon: boolean;
   isActive: boolean;
   coverImageUrl: string | null;
   previewVideoUrl?: string | null;
