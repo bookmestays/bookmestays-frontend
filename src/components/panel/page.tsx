@@ -126,6 +126,7 @@ export function Tabs<K extends string>({ tabs, value, onChange, className }: { t
         {visible.map((t, i) => (
           <button
             key={t.key}
+            type="button"
             role="tab"
             id={`tab-${t.key}`}
             aria-selected={value === t.key}
