@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Cable, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { Ban, Cable, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import { api } from "@/lib/api";
 import { errorMessage, useApi } from "@/lib/use-api";
 import { formatDate, formatINR } from "@/lib/format";
 import { CHANNEL_PROVIDER_LABELS, type CalendarResponse, type ChannelConnection, type PartnerPropertyRow } from "@/lib/types";
-import { Button, Card, EmptyState, ErrorState, Field, Input, Modal, Select, Skeleton, useToast } from "@/components/ui";
+import { Button, Card, Checkbox, EmptyState, ErrorState, Field, Input, Modal, Select, Skeleton, useToast } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { Alert, PageHeader } from "@/components/panel/page";
 import { DateRangePicker, MoneyInput, NumberInput } from "@/components/panel/inputs";
@@ -44,11 +44,19 @@ function Calendar() {
     return p ? CHANNEL_PROVIDER_LABELS[p] : "your channel manager";
   })();
   const [bulk, setBulk] = useState<{ target: Target | null; from: string; to: string } | null>(null);
+  const [soldOut, setSoldOut] = useState<{ roomTypeId: string; from: string; to: string; rooms: number | null; fully: boolean } | null>(null);
   const data = cal.data?.from === from ? cal.data : undefined;
   const readOnly = !!data?.channelManaged;
   const dates = Array.from({ length: days }, (_, i) => addDays(from, i));
 
   const open = (target: Target | null, date?: string) => !readOnly && setBulk({ target, from: date ?? from, to: date ?? to });
+  // "Sold out elsewhere": pre-fill from the clicked cell (single date) so a save doesn't flip untouched state.
+  const openSoldOut = (roomTypeId?: string, date?: string) => {
+    if (readOnly || !data) return;
+    const rtId = roomTypeId ?? data.roomTypes[0]?.id ?? "";
+    const day = date ? data.roomTypes.find((r) => r.id === rtId)?.days.find((x) => x.date === date) : undefined;
+    setSoldOut({ roomTypeId: rtId, from: date ?? from, to: date ?? to, rooms: day?.blocked ?? null, fully: day?.stopSell ?? false });
+  };
 
   return (
     <>
@@ -56,9 +64,14 @@ function Calendar() {
         title="Rates & availability"
         description="Rooms to sell, prices and restrictions per night."
         actions={
-          <Button onClick={() => open(null)} disabled={!data || readOnly}>
-            <SlidersHorizontal className="size-4" /> Bulk update
-          </Button>
+          <>
+            <Button variant="outline" onClick={() => openSoldOut()} disabled={!data || readOnly}>
+              <Ban className="size-4" /> Sold out elsewhere
+            </Button>
+            <Button onClick={() => open(null)} disabled={!data || readOnly}>
+              <SlidersHorizontal className="size-4" /> Bulk update
+            </Button>
+          </>
         }
       />
       <div className="mb-4 flex flex-wrap items-end gap-2">
@@ -165,6 +178,19 @@ function Calendar() {
                         return cellBtn(d, <span className="text-muted">{x ? `${x.sold}${x.held ? `+${x.held}` : ""}` : 0}</span>);
                       })}
                     </tr>,
+                    <tr key={`${rt.id}-b`}>
+                      <th scope="row" className="sticky left-0 z-10 border-r border-b border-line bg-white px-3 py-1.5 text-left font-medium text-ink-2">Booked elsewhere</th>
+                      {dates.map((d) => {
+                        const blocked = byDate.get(d)?.blocked ?? 0;
+                        return (
+                          <td key={d} className="border-b border-l border-line p-0 text-center">
+                            <button type="button" disabled={readOnly} onClick={() => openSoldOut(rt.id, d)} className="h-full w-full px-1 py-1.5 enabled:hover:bg-brand-soft/50 disabled:cursor-default">
+                              {blocked > 0 ? <span className="font-semibold text-warning">{blocked}</span> : <span className="text-muted">—</span>}
+                            </button>
+                          </td>
+                        );
+                      })}
+                    </tr>,
                     <tr key={`${rt.id}-x`}>
                       <th scope="row" className="sticky left-0 z-10 border-r border-b border-line bg-white px-3 py-1.5 text-left font-medium text-ink-2">Stop sell</th>
                       {dates.map((d) => cellBtn(d, byDate.get(d)?.stopSell ? <span className="font-semibold text-danger">Closed</span> : <span className="text-muted">—</span>))}
@@ -229,6 +255,21 @@ function Calendar() {
             onClose={() => setBulk(null)}
             onSaved={() => {
               setBulk(null);
+              cal.refetch();
+            }}
+          />
+        )}
+      </Modal>
+
+      <Modal open={!!soldOut} onClose={() => setSoldOut(null)} title="Sold out elsewhere" size="md">
+        {soldOut && data && propertyId && (
+          <SoldOutForm
+            propertyId={propertyId}
+            cal={data}
+            initial={soldOut}
+            onClose={() => setSoldOut(null)}
+            onSaved={() => {
+              setSoldOut(null);
               cal.refetch();
             }}
           />
@@ -370,6 +411,92 @@ function BulkForm({ propertyId, cal, initial, onClose, onSaved }: { propertyId: 
         </Button>
         <Button type="submit" loading={busy}>
           Apply
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function SoldOutForm({
+  propertyId,
+  cal,
+  initial,
+  onClose,
+  onSaved,
+}: {
+  propertyId: string;
+  cal: CalendarResponse;
+  initial: { roomTypeId: string; from: string; to: string; rooms: number | null; fully: boolean };
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const toast = useToast();
+  const [roomTypeId, setRoomTypeId] = useState(initial.roomTypeId || cal.roomTypes[0]?.id || "");
+  const [range, setRange] = useState({ from: initial.from, to: initial.to });
+  const [rooms, setRooms] = useState<number | null>(initial.rooms);
+  const [fully, setFully] = useState(initial.fully);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const room = cal.roomTypes.find((r) => r.id === roomTypeId);
+
+  const submit = async () => {
+    setErr(null);
+    if (!range.from || !range.to || range.to < range.from) return setErr("Choose a valid date range");
+    if (rooms == null && !fully) return setErr("Enter how many rooms were booked elsewhere, or tick 'fully sold out'.");
+    if (rooms != null && room && rooms > room.totalRooms) return setErr(`You have only ${room.totalRooms} room(s) of this type`);
+    setBusy(true);
+    try {
+      await api(`/partner/properties/${propertyId}/calendar/sold-out`, {
+        method: "PUT",
+        body: { roomTypeId, from: range.from, to: range.to, roomsBookedElsewhere: rooms ?? undefined, fullySoldOut: fully },
+      });
+      toast.success("Calendar updated");
+      onSaved();
+    } catch (e) {
+      setErr(errorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form
+      noValidate
+      className="space-y-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        submit();
+      }}
+    >
+      <p className="text-sm text-muted">
+        Rooms booked on another site or offline. Blocking them here keeps those nights from being booked again on
+        BookMeStays — without lowering your room count.
+      </p>
+      <Field label="Room type">
+        <Select value={roomTypeId} onChange={(e) => setRoomTypeId(e.target.value)}>
+          {cal.roomTypes.map((rt) => (
+            <option key={rt.id} value={rt.id}>
+              {rt.name} — {rt.totalRooms} rooms
+            </option>
+          ))}
+        </Select>
+      </Field>
+      <DateRangePicker from={range.from} to={range.to} onChange={setRange} />
+      <Field label="Rooms booked elsewhere" hint={room ? `Out of ${room.totalRooms}; set 0 to clear` : undefined}>
+        <NumberInput min={0} max={room?.totalRooms} value={rooms} onChange={setRooms} disabled={fully} />
+      </Field>
+      <Checkbox label="Mark these dates fully sold out (close the room type)" checked={fully} onChange={(e) => setFully(e.target.checked)} />
+      {err && (
+        <p role="alert" className="text-sm text-danger">
+          {err}
+        </p>
+      )}
+      <div className="flex justify-end gap-2 border-t border-line pt-4">
+        <Button variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button type="submit" loading={busy}>
+          Save
         </Button>
       </div>
     </form>
