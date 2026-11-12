@@ -19,6 +19,11 @@ function normaliseTarget(v: string) {
   return /^\d{10}$/.test(digits) ? `+91${digits}` : digits;
 }
 const isValidEmail = (t: string) => /^\S+@\S+\.\S+$/.test(t);
+// Accepts a bare 10-digit Indian number or a +<country code> number (10–15 digits).
+const isValidPhone = (t: string) => {
+  const d = t.replace(/[^\d+]/g, "");
+  return /^\d{10}$/.test(d) || /^\+\d{10,15}$/.test(d);
+};
 
 export function LoginForm({
   onSuccess,
@@ -37,7 +42,7 @@ export function LoginForm({
         <div role="tablist" aria-label="Sign-in method" className="grid grid-cols-2 gap-1 rounded-lg bg-surface-2 p-1 text-sm">
           {(
             [
-              ["otp", "Email code", Mail],
+              ["otp", "OTP code", Mail],
               ["password", "Password", KeyRound],
             ] as const
           ).map(([m, label, Icon]) => (
@@ -99,22 +104,30 @@ export function LoginForm({
 function OtpForm({ onSuccess }: { onSuccess: (u: User) => void }) {
   const [step, setStep] = useState<"request" | "verify">("request");
   const [target, setTarget] = useState("");
+  const [channel, setChannel] = useState<"email" | "whatsapp">("email");
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const sentTo = channel === "whatsapp" ? "on WhatsApp" : "by email";
+
   async function request(e?: FormEvent) {
     e?.preventDefault();
-    const t = target.trim().toLowerCase();
-    if (!isValidEmail(t)) {
-      setError("Enter a valid email address.");
+    const t = normaliseTarget(target);
+    const asEmail = t.includes("@");
+    if (asEmail ? !isValidEmail(t) : !isValidPhone(t)) {
+      setError("Enter a valid email address or mobile number.");
       return;
     }
     setBusy(true);
     setError(null);
     try {
-      await api<{ sent: boolean; target: string }>("/auth/otp/request", { method: "POST", body: { target: t } });
+      const res = await api<{ sent: boolean; target: string; channel: "email" | "whatsapp" }>("/auth/otp/request", {
+        method: "POST",
+        body: { target: t },
+      });
+      setChannel(res.channel ?? (asEmail ? "email" : "whatsapp"));
       setStep("verify");
     } catch (err) {
       setError(errMsg(err));
@@ -126,7 +139,7 @@ function OtpForm({ onSuccess }: { onSuccess: (u: User) => void }) {
   async function verify(e: FormEvent) {
     e.preventDefault();
     if (!/^\d{4,8}$/.test(code.trim())) {
-      setError("Enter the code we emailed you.");
+      setError(`Enter the code we sent ${sentTo}.`);
       return;
     }
     setBusy(true);
@@ -134,7 +147,7 @@ function OtpForm({ onSuccess }: { onSuccess: (u: User) => void }) {
     try {
       const res = await api<AuthResponse>("/auth/otp/verify", {
         method: "POST",
-        body: { target: target.trim().toLowerCase(), code: code.trim(), name: name.trim() || undefined },
+        body: { target: normaliseTarget(target), code: code.trim(), name: name.trim() || undefined },
       });
       onSuccess(res.user);
     } catch (err) {
@@ -147,13 +160,13 @@ function OtpForm({ onSuccess }: { onSuccess: (u: User) => void }) {
   if (step === "request") {
     return (
       <form onSubmit={request} className="flex flex-col gap-4" noValidate>
-        <Field label="Email address" hint="We'll email you a 6-digit code." error={error}>
+        <Field label="Email or mobile number" hint="We'll send a 6-digit code to your email or WhatsApp." error={error}>
           <Input
             autoFocus
-            type="email"
+            type="text"
             inputMode="email"
-            autoComplete="email"
-            placeholder="you@example.com"
+            autoComplete="username"
+            placeholder="you@example.com or 98765 43210"
             value={target}
             onChange={(e) => setTarget(e.target.value)}
             aria-invalid={!!error}
@@ -169,9 +182,12 @@ function OtpForm({ onSuccess }: { onSuccess: (u: User) => void }) {
   return (
     <form onSubmit={verify} className="flex flex-col gap-4" noValidate>
       <button type="button" onClick={() => setStep("request")} className="inline-flex items-center gap-1 self-start text-sm text-muted hover:text-ink">
-        <ArrowLeft className="size-4" aria-hidden /> {target.trim().toLowerCase()}
+        <ArrowLeft className="size-4" aria-hidden /> {normaliseTarget(target)}
       </button>
-      <p className="text-sm text-muted">We&apos;ve emailed a 6-digit code to you. Check your spam folder if it doesn&apos;t arrive.</p>
+      <p className="text-sm text-muted">
+        We&apos;ve sent a 6-digit code to you {sentTo}.{" "}
+        {channel === "whatsapp" ? "Check your WhatsApp messages." : "Check your spam folder if it doesn't arrive."}
+      </p>
       <Field label="Verification code" error={error}>
         <Input
           autoFocus
