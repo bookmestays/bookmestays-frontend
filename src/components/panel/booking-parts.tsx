@@ -85,6 +85,7 @@ export function PriceBreakdown({ b, showPayout = true }: { b: BookingDetail; sho
           <Row label="Room charges" value={b.roomAmount} />
           <Row label="Taxes (GST)" value={b.roomTax} />
           {!!b.addonsAmount && <Row label="Add-ons" value={b.addonsAmount} />}
+          {!!b.commissionAmount && <Row label="Service fee" value={b.commissionAmount} hint="Platform commission charged to the guest" />}
           {!!b.discountAmount && <Row label="Discount" value={b.discountAmount} negative />}
           <Row label="Total" value={b.totalAmount} strong />
           {!!b.refundAmount && <Row label="Refunded" value={b.refundAmount} negative />}
@@ -95,12 +96,15 @@ export function PriceBreakdown({ b, showPayout = true }: { b: BookingDetail; sho
           <h3 className="mb-1 text-xs font-semibold tracking-wide text-muted uppercase">Hotel payout</h3>
           <dl>
             <Row label="Room charges + tax" value={b.roomAmount + b.roomTax} />
-            <Row label="BookMeStays commission" value={b.commissionAmount} negative />
-            <Row label="GST on commission" value={b.commissionTax} negative />
             {!!b.tcsAmount && <Row label="TCS" value={b.tcsAmount} negative hint="Tax collected at source" />}
             {!!b.tdsAmount && <Row label="TDS" value={b.tdsAmount} negative hint="Tax deducted at source" />}
             <Row label="Net payout" value={b.partnerPayout} strong />
           </dl>
+          {!!b.commissionAmount && (
+            <p className="mt-2 text-xs text-muted">
+              Platform commission of {formatINR(b.commissionAmount)} is charged to the guest — it is not deducted from your payout.
+            </p>
+          )}
           {b.settlementDueDate && <p className="mt-2 text-xs text-muted">Settlement due {formatDate(b.settlementDueDate)}</p>}
         </div>
       )}

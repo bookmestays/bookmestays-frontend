@@ -31,7 +31,7 @@ type Ctx = {
   selections: Record<string, Selection>; // by ratePlanId
   setQuantity: (roomTypeId: string, ratePlanId: string, qty: number) => void;
   lines: Line[];
-  totals: { rooms: number; amount: number; taxes: number; capacity: number };
+  totals: { rooms: number; amount: number; taxes: number; fees: number; capacity: number };
   reserve: () => Promise<void>;
   reserving: boolean;
 };
@@ -123,9 +123,10 @@ export function BookingProvider({
           rooms: t.rooms + l.quantity,
           amount: t.amount + l.plan.totalPrice * l.quantity,
           taxes: t.taxes + l.plan.taxesPerRoom * l.quantity,
+          fees: t.fees + l.plan.feePerRoom * l.quantity,
           capacity: t.capacity + l.maxOccupancy * l.quantity,
         }),
-        { rooms: 0, amount: 0, taxes: 0, capacity: 0 },
+        { rooms: 0, amount: 0, taxes: 0, fees: 0, capacity: 0 },
       ),
     [lines],
   );

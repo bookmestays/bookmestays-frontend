@@ -135,12 +135,18 @@ export function BookingWidget({ startingPrice }: { startingPrice: number | null 
         {b.totals.rooms > 0 && (
           <>
             <div className="flex justify-between gap-3 text-ink-2">
-              <span>Taxes &amp; fees</span>
+              <span>Taxes (GST)</span>
               <span>{formatINR(b.totals.taxes)}</span>
             </div>
+            {b.totals.fees > 0 && (
+              <div className="flex justify-between gap-3 text-ink-2">
+                <span>Service fee</span>
+                <span>{formatINR(b.totals.fees)}</span>
+              </div>
+            )}
             <div className="flex justify-between gap-3 border-t border-line pt-2 font-semibold text-ink">
               <span>Total</span>
-              <span>{formatINR(b.totals.amount + b.totals.taxes)}</span>
+              <span>{formatINR(b.totals.amount + b.totals.taxes + b.totals.fees)}</span>
             </div>
           </>
         )}

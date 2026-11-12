@@ -108,6 +108,8 @@ export function BookingDetailView({ code, variant }: { code: string; variant: "c
 
   const isNewlyConfirmed = variant === "confirmation" && (b.status === "CONFIRMED" || b.status === "CHECKED_IN");
   const pending = b.status === "PENDING_PAYMENT";
+  // Platform commission charged to the guest on top of room + GST (derived from guest-visible fields).
+  const serviceFee = b.totalAmount - b.roomAmount - b.roomTax - b.addonsAmount + b.discountAmount;
   const upcoming = b.status === "CONFIRMED";
   const holdActive = pending && (holdLeft ?? 0) > 0;
 
@@ -242,6 +244,7 @@ export function BookingDetailView({ code, variant }: { code: string; variant: "c
             ))}
             <Row label="Taxes (GST)" value={formatINR(b.roomTax)} />
             {b.addonsAmount > 0 && <Row label="Add-ons" value={formatINR(b.addonsAmount)} />}
+            {serviceFee > 0 && <Row label="Service fee" value={formatINR(serviceFee)} />}
             {b.discountAmount > 0 && <Row label="Discount" value={`− ${formatINR(b.discountAmount)}`} />}
             <Row label={pending ? "Amount due" : "Total paid"} value={formatINR(b.totalAmount)} strong />
             {b.refundAmount > 0 && <p className="text-sm font-medium text-success">Refund: {formatINR(b.refundAmount)}</p>}

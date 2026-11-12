@@ -348,7 +348,7 @@ export function CommissionSection({ s, set, errors, mode }: SectionProps) {
           onChange={(v) => set({ defaultCommissionType: v.type, defaultCommissionValue: v.value })}
         />
       </Field>
-      {s.defaultCommissionValue != null && <p className="text-sm text-ink-2">BookMeStays keeps {commissionLabel(s.defaultCommissionType, s.defaultCommissionValue)} (+ GST on commission).</p>}
+      {s.defaultCommissionValue != null && <p className="text-sm text-ink-2">BookMeStays adds a {commissionLabel(s.defaultCommissionType, s.defaultCommissionValue)} service fee charged to the guest (no GST on it); the partner receives their full room rate.</p>}
       {mode === "create" && <p className="text-xs text-muted">Room-type specific commission can be set when approving each room type, or later under the partner&apos;s Commission tab.</p>}
     </div>
   );

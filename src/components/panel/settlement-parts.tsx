@@ -22,7 +22,7 @@ export function settlementColumns(opts: { showPartner?: boolean } = {}): Column<
     { key: "scheduled", header: "Scheduled", cell: (s) => formatDate(s.scheduledFor), sortValue: (s) => s.scheduledFor },
     { key: "count", header: "Bookings", cell: (s) => s.bookingsCount, align: "right", hideBelow: "sm" },
     { key: "gross", header: "Gross", cell: (s) => formatINR(s.grossAmount), align: "right", sortValue: (s) => s.grossAmount, hideBelow: "md" },
-    { key: "commission", header: "Commission", cell: (s) => formatINR(s.commissionAmount + s.commissionTax), align: "right", hideBelow: "lg" },
+    { key: "commission", header: "Commission", cell: (s) => formatINR(s.commissionAmount), align: "right", hideBelow: "lg" },
     { key: "net", header: "Net payable", cell: (s) => <span className="font-semibold text-ink">{formatINR(s.netPayable)}</span>, align: "right", sortValue: (s) => s.netPayable },
     { key: "status", header: "Status", cell: (s) => <StatusBadge kind="settlement" status={s.status} />, sortValue: (s) => s.status },
   ];
@@ -45,8 +45,9 @@ export function SettlementBreakdown({ s }: { s: Settlement }) {
   return (
     <dl>
       <Line label={`Gross booking value (${s.bookingsCount} booking${s.bookingsCount === 1 ? "" : "s"})`} value={s.grossAmount} hint="Room charges + taxes collected from guests" />
-      <Line label="BookMeStays commission" value={s.commissionAmount} negative />
-      <Line label="GST on commission" value={s.commissionTax} negative />
+      {/* Commission is charged to the guest as a service fee, not deducted from the partner — shown only for legacy settlements. */}
+      {!!s.commissionAmount && <Line label="BookMeStays commission" value={s.commissionAmount} negative />}
+      {!!s.commissionTax && <Line label="GST on commission" value={s.commissionTax} negative />}
       {!!s.tcsAmount && <Line label="TCS" value={s.tcsAmount} negative />}
       {!!s.tdsAmount && <Line label="TDS" value={s.tdsAmount} negative />}
       {!!s.refundAdjustments && <Line label="Refund adjustments" value={s.refundAdjustments} hint="Refunds on already-settled bookings" />}

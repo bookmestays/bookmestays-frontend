@@ -423,6 +423,12 @@ export function CheckoutFlow({
                   <span>Taxes (GST)</span>
                   <span>{formatINR(quote.roomTax)}</span>
                 </div>
+                {quote.serviceFee > 0 && (
+                  <div className="flex justify-between gap-3 text-ink-2">
+                    <span>Service fee</span>
+                    <span>{formatINR(quote.serviceFee)}</span>
+                  </div>
+                )}
                 {quote.addonsAmount > 0 && (
                   <div className="flex justify-between gap-3 text-ink-2">
                     <span>Add-ons</span>

@@ -174,10 +174,11 @@ export default function SettingsPage() {
                   e.g. up to {formatINR(750000)}/night → 5%, above → 18%. The last slab applies to everything above the previous limit.
                 </p>
               </div>
-              <div className="grid gap-4 sm:grid-cols-3">
-                <Field label="GST on commission">
-                  <PercentInput value={v.commissionGstBps} onChange={(n) => set({ commissionGstBps: n ?? 0 })} />
-                </Field>
+              <p className="text-xs text-muted">
+                GST applies to the room tariff only (per the slabs above). The platform commission is charged to the guest as a
+                service fee with no GST added, so there is no GST-on-commission setting.
+              </p>
+              <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="TCS (on room amount)">
                   <PercentInput value={v.tcsBps} onChange={(n) => set({ tcsBps: n ?? 0 })} />
                 </Field>

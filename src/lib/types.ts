@@ -318,6 +318,7 @@ export type RatePlanAvailability = {
   totalPrice: number; // per room for the whole stay, before tax
   avgNightly: number;
   taxesPerRoom: number;
+  feePerRoom: number; // platform service fee (commission) per room, charged to the guest on top
   available: number; // rooms available for every night
   bookable: boolean;
   reason?: string; // e.g. "Minimum stay 2 nights", "Sold out"
@@ -353,6 +354,7 @@ export type PriceQuote = {
   roomAmount: number;
   roomTax: number;
   addonsAmount: number;
+  serviceFee: number; // platform commission, charged to the guest on top of room + GST
   discountAmount: number;
   totalAmount: number;
   coupon: { code: string; discount: number } | null;

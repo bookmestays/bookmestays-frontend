@@ -45,6 +45,8 @@ export function BookingInvoice({ booking: b }: { booking: BookingDetail }) {
   const title = pending ? "Booking summary" : inv?.sellerGstin ? "Tax invoice" : "Booking invoice";
   const cgst = Math.round(b.roomTax / 2);
   const sgst = b.roomTax - cgst;
+  // Platform commission charged to the guest on top of room + GST (derived; not exposed as a raw field).
+  const serviceFee = b.totalAmount - b.roomAmount - b.roomTax - b.addonsAmount + b.discountAmount;
   const statusLabel = STATUS_LABEL[b.status] ?? b.status.replace(/_/g, " ").toLowerCase();
   const address = [b.property.address ?? b.property.cityName, inv?.propertyPincode].filter(Boolean).join(" – ");
 
@@ -147,6 +149,7 @@ export function BookingInvoice({ booking: b }: { booking: BookingDetail }) {
             </>
           )}
           {b.addonsAmount > 0 && <Line label="Add-ons" value={inr(b.addonsAmount)} />}
+          {serviceFee > 0 && <Line label="Service fee" value={inr(serviceFee)} />}
           {b.discountAmount > 0 && <Line label="Discount" value={`− ${inr(b.discountAmount)}`} />}
           <div className="mt-2 flex justify-between border-t-2 border-ink pt-2 text-[14px] font-bold">
             <dt>{pending ? "Amount due" : "Total paid"}</dt>
