@@ -1,11 +1,13 @@
 import { MapPinOff } from "lucide-react";
 import Link from "next/link";
 import { Container } from "@/components/site/primitives";
+import { TrackView } from "@/components/site/property/property-client-bits";
 import { buttonClass, EmptyState } from "@/components/ui";
 
 export default function SiteNotFound() {
   return (
     <Container className="py-20">
+      <TrackView event="page_not_found" props={{}} />
       <EmptyState
         icon={<MapPinOff />}
         title="We couldn't find that page"

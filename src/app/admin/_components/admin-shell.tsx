@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import {
+  Activity,
   BadgeCheck,
   BarChart3,
   Building2,
@@ -42,6 +43,7 @@ const NAV: NavGroup[] = [
       { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
       { href: "/admin/settlements", label: "Settlements", icon: Wallet },
       { href: "/admin/reports", label: "Reports", icon: BarChart3 },
+      { href: "/admin/analytics", label: "Site analytics", icon: Activity },
       { href: "/admin/channel-managers", label: "Channel managers", icon: Cable },
       { href: "/admin/reviews", label: "Reviews", icon: MessageSquareText },
       { href: "/admin/coupons", label: "Coupons", icon: TicketPercent },

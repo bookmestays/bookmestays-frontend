@@ -123,11 +123,18 @@ export function CheckoutFlow({
       return; // the mock panel renders a "Simulate successful payment" button
     }
     setStage("paying");
+    track("payment_started", { bookingCode: b.code, amount: b.totalAmount, propertyId: property.id });
     try {
       const confirmed = await payWithRazorpay(b.code, o, `${property.name} · ${b.nights} night${b.nights === 1 ? "" : "s"}`);
       finish(confirmed);
     } catch (e) {
       const err = e as { dismissed?: boolean; failed?: string; message?: string };
+      track("payment_failed", {
+        bookingCode: b.code,
+        propertyId: property.id,
+        reason: err.dismissed ? "cancelled_by_guest" : "failed",
+        message: (err.failed ?? err.message ?? "").slice(0, 200) || undefined,
+      });
       setStage("failed");
       setPayError(err.dismissed ? "Payment was cancelled. Your rooms are still on hold — you can try again." : (err.failed ?? err.message ?? "Payment failed. Please try again."));
     }
@@ -154,6 +161,7 @@ export function CheckoutFlow({
       await pay(res.booking, res.payment);
     } catch (err) {
       const msg = errMsg(err, "We couldn't create your booking. Please try again.");
+      track("booking_error", { propertyId: property.id, message: msg.slice(0, 200), status: err instanceof ApiError ? err.status : undefined });
       setFormError(err instanceof ApiError && err.status === 409 ? `${msg} Please go back and choose different rooms or dates.` : msg);
     } finally {
       setBusy(false);

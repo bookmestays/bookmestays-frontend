@@ -2,6 +2,7 @@ import { ToastProvider } from "@/components/ui";
 import { AuthProvider } from "@/components/site/auth-context";
 import { SiteHeader } from "@/components/site/header/site-header";
 import { NoticeMarquee } from "@/components/site/header/notice-marquee";
+import { SiteAnalytics } from "@/components/site/site-analytics";
 import { SiteFooter } from "@/components/site/site-footer";
 import { WishlistProvider } from "@/components/site/wishlist-context";
 import { getSiteMeta } from "@/lib/public-data";
@@ -19,6 +20,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
               {children}
             </main>
             <SiteFooter support={meta.support} />
+            <SiteAnalytics />
           </div>
         </WishlistProvider>
       </AuthProvider>

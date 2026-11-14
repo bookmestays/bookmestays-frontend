@@ -490,6 +490,40 @@ export type AdminReport = {
   payouts: { paidToHotels: number; outstandingToHotels: number };
 };
 
+/** GET /admin/analytics — guest-site traffic, booking funnel and problems (money in paise, rates 0–1). */
+export type SiteAnalytics = {
+  range: { from: string; to: string };
+  summary: {
+    visitors: number;
+    newVisitors: number;
+    returningVisitors: number;
+    sessions: number;
+    pageViews: number;
+    pagesPerSession: number;
+    loggedInVisitors: number;
+    searchers: number;
+    bookings: number;
+    bookingRevenue: number;
+    conversionRate: number;
+  };
+  daily: { date: string; visitors: number; pageViews: number }[];
+  funnel: { key: string; label: string; visitors: number; ofVisited: number; fromPrevious: number }[];
+  topPages: { path: string; label: string; views: number; visitors: number }[];
+  sources: { source: string; visitors: number; sessions: number; bookings: number }[];
+  countries: { country: string; visitors: number }[];
+  cities: { city: string; region: string | null; country: string | null; visitors: number }[];
+  devices: { device: string; visitors: number }[];
+  searches: { term: string; searches: number; visitors: number }[];
+  properties: { propertyId: string; name: string; slug: string | null; views: number; visitors: number; checkouts: number; bookings: number }[];
+  issues: {
+    abandonedCheckouts: number;
+    jsErrors: { message: string; count: number; visitors: number; lastPath: string | null; lastSeen: string }[];
+    notFound: { path: string; count: number; visitors: number }[];
+    paymentFailures: { reason: string; count: number; visitors: number }[];
+    bookingErrors: { message: string; count: number; visitors: number }[];
+  };
+};
+
 export type CreatePartnerInput = {
   legalName: string;
   displayName: string;
