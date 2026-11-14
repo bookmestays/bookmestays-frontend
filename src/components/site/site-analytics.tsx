@@ -26,8 +26,9 @@ export function SiteAnalytics() {
     const report = (message: string, extra: Record<string, unknown>) => {
       const key = message.slice(0, 200);
       if (!key || seen.has(key) || sent >= MAX_ERRORS_PER_PAGE) return;
-      // Noise from browser extensions / cross-origin scripts we can't act on
-      if (/^Script error\.?$/i.test(key) || /ResizeObserver loop/i.test(key)) return;
+      // Noise we can't act on: cross-origin scripts, browser quirks, and the Instagram/Facebook
+      // in-app browser's own Android bridge ("Java object is gone") when the guest closes it
+      if (/^Script error\.?$/i.test(key) || /ResizeObserver loop|Java object is gone|Java bridge method/i.test(key)) return;
       seen.add(key);
       sent++;
       track("js_error", { message: key, ...extra });
