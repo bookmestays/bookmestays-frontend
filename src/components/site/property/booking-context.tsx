@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { createContext, use, useEffect, useMemo, useState, type ReactNode } from "react";
 import { api, ApiError } from "@/lib/api";
 import { track } from "@/lib/analytics";
+import { pixelInitiateCheckout } from "@/lib/meta-pixel";
 import { filtersToQuery, nightsBetween } from "@/lib/search-params";
 import type { AvailabilityResponse, RatePlanAvailability } from "@/lib/types";
 import { useAuth } from "../auth-context";
@@ -150,6 +151,7 @@ export function BookingProvider({
       const user = await requireAuth("Sign in to continue your booking. Your room selection is saved.");
       if (!user) return;
       track("booking_started", { propertyId, nights: nightsBetween(stay.checkIn, stay.checkOut), rooms: totals.rooms, amount: totals.amount });
+      pixelInitiateCheckout();
       const q = new URLSearchParams({
         property: slug,
         checkIn: stay.checkIn,

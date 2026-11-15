@@ -7,6 +7,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Button, buttonClass, Card, Checkbox, Field, Input, Skeleton, Textarea } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import { track } from "@/lib/analytics";
+import { pixelAddPaymentInfo, pixelPurchase } from "@/lib/meta-pixel";
 import { cn } from "@/lib/cn";
 import { formatDate, formatINR } from "@/lib/format";
 import { filtersToQuery, guestsLabel } from "@/lib/search-params";
@@ -113,11 +114,15 @@ export function CheckoutFlow({
 
   const finish = (b: BookingDetail) => {
     track("payment_completed", { bookingCode: b.code, amount: b.totalAmount, propertyId: property.id });
+    // `b` is the booking the backend returned after verifying the Razorpay signature and confirming it.
+    pixelPurchase(b);
     router.replace(`/checkout/confirmation/${b.code}`);
   };
 
   const pay = async (b: BookingDetail, o: PaymentOrder) => {
     setPayError(null);
+    // The guest has just submitted the payment step ("Pay securely" / "Try again"), not merely seen a QR.
+    pixelAddPaymentInfo(b.code);
     if (isMockPayment(o)) {
       setStage("paying");
       return; // the mock panel renders a "Simulate successful payment" button
