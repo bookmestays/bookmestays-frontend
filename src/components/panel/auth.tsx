@@ -10,7 +10,7 @@ import { ErrorState } from "@/components/ui";
 export type Portal = "admin" | "partner";
 
 const PORTAL_ROLES: Record<Portal, Role[]> = {
-  admin: ["SUPER_ADMIN", "ADMIN_STAFF"],
+  admin: ["SUPER_ADMIN", "ADMIN_STAFF", "BLOG_EDITOR"],
   partner: ["PARTNER_OWNER", "PARTNER_STAFF"],
 };
 
@@ -23,6 +23,8 @@ type AuthCtx = {
   can: (permission: string) => boolean;
   isOwner: boolean;
   isSuperAdmin: boolean;
+  /** content writer: admin panel access limited to the Blog section */
+  isBlogEditor: boolean;
 };
 
 const Ctx = createContext<AuthCtx | null>(null);
@@ -117,6 +119,7 @@ export function PanelAuthGuard({ portal, children, allowPasswordChange = false }
     logout,
     isOwner,
     isSuperAdmin: me.user.role === "SUPER_ADMIN",
+    isBlogEditor: me.user.role === "BLOG_EDITOR",
     can: (p) => isAdmin || isOwner || me.permissions.includes(p),
   };
   return <Ctx value={value}>{children}</Ctx>;

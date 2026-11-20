@@ -118,5 +118,5 @@ export function useAuth() {
   return ctx;
 }
 
-export const isStaffRole = (u: User | null) => u?.role === "SUPER_ADMIN" || u?.role === "ADMIN_STAFF";
+export const isStaffRole = (u: User | null) => u?.role === "SUPER_ADMIN" || u?.role === "ADMIN_STAFF" || u?.role === "BLOG_EDITOR";
 export const isPartnerRole = (u: User | null) => u?.role === "PARTNER_OWNER" || u?.role === "PARTNER_STAFF";

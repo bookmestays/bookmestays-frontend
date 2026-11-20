@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Clapperboard, Compass, Heart, Home, Landmark, Layers, Sparkles, TreePine, Users, Users2 } from "lucide-react";
+import { Building2, Clapperboard, Compass, Heart, Home, Landmark, Layers, Newspaper, Sparkles, TreePine, Users, Users2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
@@ -25,6 +25,7 @@ const MORE: Item[] = [
   { href: "/experiences", label: "Experiences", icon: Sparkles },
   { href: "/videos", label: "Video tours", icon: Clapperboard },
   { href: "/collections", label: "Collections", icon: Layers },
+  { href: "/blog", label: "Blog", icon: Newspaper },
 ];
 
 /** Discovery chips: stay types · travel styles · experiences (scrolls sideways on small screens). */

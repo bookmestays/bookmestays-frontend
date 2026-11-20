@@ -1,6 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   BadgeCheck,
@@ -16,6 +17,8 @@ import {
   Layers,
   MapPin,
   Megaphone,
+  Newspaper,
+  KeyRound,
   MessageSquareQuote,
   MessageSquareText,
   Settings,
@@ -25,7 +28,7 @@ import {
   Wallet,
   Wifi,
 } from "lucide-react";
-import { PanelAuthGuard } from "@/components/panel/auth";
+import { PanelAuthGuard, usePanelAuth } from "@/components/panel/auth";
 import { PanelShell, type NavGroup } from "@/components/panel/shell";
 
 const NAV: NavGroup[] = [
@@ -52,6 +55,7 @@ const NAV: NavGroup[] = [
   {
     label: "Content (CMS)",
     items: [
+      { href: "/admin/blog", label: "Blog", icon: Newspaper },
       { href: "/admin/cms/banners", label: "Hero banners", icon: Film },
       { href: "/admin/cms/home-sections", label: "Home sections", icon: LayoutList },
       { href: "/admin/cms/ads", label: "Ad posters", icon: Megaphone },
@@ -72,12 +76,36 @@ const NAV: NavGroup[] = [
   },
 ];
 
+// Blog writers (BLOG_EDITOR) only get the blog section of the admin panel.
+const BLOG_NAV: NavGroup[] = [
+  {
+    items: [
+      { href: "/admin/blog", label: "Blog posts", icon: Newspaper },
+      { href: "/admin/change-password", label: "Change password", icon: KeyRound },
+    ],
+  },
+];
+const BLOG_EDITOR_PATHS = ["/admin/blog", "/admin/change-password"];
+
+function AdminFrame({ children }: { children: ReactNode }) {
+  const { isBlogEditor } = usePanelAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+  const allowed = !isBlogEditor || BLOG_EDITOR_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  useEffect(() => {
+    if (!allowed) router.replace("/admin/blog");
+  }, [allowed, router]);
+  return (
+    <PanelShell title={isBlogEditor ? "Blog" : "Admin"} nav={isBlogEditor ? BLOG_NAV : NAV}>
+      {allowed ? children : null}
+    </PanelShell>
+  );
+}
+
 export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <PanelAuthGuard portal="admin">
-      <PanelShell title="Admin" nav={NAV}>
-        {children}
-      </PanelShell>
+      <AdminFrame>{children}</AdminFrame>
     </PanelAuthGuard>
   );
 }

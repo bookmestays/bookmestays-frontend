@@ -125,6 +125,7 @@ export const ROLE_LABELS: Record<string, string> = {
   PARTNER_OWNER: "Owner",
   PARTNER_STAFF: "Staff",
   CUSTOMER: "Customer",
+  BLOG_EDITOR: "Blog writer",
 };
 
 export function commissionLabel(type: CommissionType, value: number) {

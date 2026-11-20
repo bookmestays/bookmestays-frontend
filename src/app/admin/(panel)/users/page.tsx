@@ -7,7 +7,7 @@ import { errorMessage, useApi } from "@/lib/use-api";
 import { formatDate } from "@/lib/format";
 import type { Paginated, User } from "@/lib/types";
 import type { AdminUserRow } from "@/lib/panel-types";
-import { Badge, Button, Field, Input, Modal, useToast } from "@/components/ui";
+import { Badge, Button, Field, Input, Modal, Select, useToast } from "@/components/ui";
 import { CopyButton, PageHeader } from "@/components/panel/page";
 import { DataTable, useUrlPagination } from "@/components/panel/data-table";
 import { FiltersBar, SearchFilter, UrlTabs } from "@/components/panel/filters";
@@ -19,7 +19,7 @@ import { passwordProblems } from "@/components/panel/auth-forms";
 
 const TAB_ROLES: Record<string, string | string[]> = {
   customers: "CUSTOMER",
-  staff: ["SUPER_ADMIN", "ADMIN_STAFF"],
+  staff: ["SUPER_ADMIN", "ADMIN_STAFF", "BLOG_EDITOR"],
   partners: ["PARTNER_OWNER", "PARTNER_STAFF"],
 };
 
@@ -52,11 +52,11 @@ export default function UsersPage() {
     <>
       <PageHeader
         title="Users"
-        description="Guests, partner logins and BookMeStays staff."
+        description="Guests, partner logins, BookMeStays staff and blog writers."
         actions={
           isSuperAdmin && (
             <Button onClick={() => setCreating(true)}>
-              <UserPlus className="size-4" /> New staff member
+              <UserPlus className="size-4" /> New staff / blog writer
             </Button>
           )
         }
@@ -65,7 +65,7 @@ export default function UsersPage() {
         tabs={[
           { value: "customers", label: "Customers" },
           { value: "partners", label: "Partner users" },
-          { value: "staff", label: "Admin staff" },
+          { value: "staff", label: "Admin staff & writers" },
         ]}
       />
       <FiltersBar>
@@ -108,7 +108,7 @@ export default function UsersPage() {
         ]}
         empty={{ title: "No users found" }}
       />
-      <Modal open={creating} onClose={() => setCreating(false)} title="New admin staff member">
+      <Modal open={creating} onClose={() => setCreating(false)} title="New staff member or blog writer">
         {creating && (
           <StaffForm
             onClose={() => setCreating(false)}
@@ -124,7 +124,7 @@ export default function UsersPage() {
 
 function StaffForm({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
   const toast = useToast();
-  const [f, setF] = useState({ name: "", email: "", phone: "", password: "" });
+  const [f, setF] = useState({ name: "", email: "", phone: "", password: "", role: "ADMIN_STAFF" as "ADMIN_STAFF" | "BLOG_EDITOR" });
   const [touched, setTouched] = useState(false);
   const [busy, setBusy] = useState(false);
   const [temp, setTemp] = useState<string | null>(null);
@@ -134,7 +134,10 @@ function StaffForm({ onClose, onDone }: { onClose: () => void; onDone: () => voi
   if (temp)
     return (
       <div className="space-y-4">
-        <p className="text-sm text-ink-2">Staff account created. Share this temporary password securely — it&apos;s shown only once.</p>
+        <p className="text-sm text-ink-2">
+          {f.role === "BLOG_EDITOR" ? "Blog writer" : "Staff"} account created. Share the login email and this temporary password securely — it&apos;s shown only once.
+          They sign in at the admin panel login page{f.role === "BLOG_EDITOR" ? " and will only see the Blog section" : ""}.
+        </p>
         <div className="flex items-center justify-between gap-2 rounded-lg bg-surface-2 px-3 py-2">
           <span className="font-mono">{temp}</span>
           <CopyButton value={temp} />
@@ -157,9 +160,9 @@ function StaffForm({ onClose, onDone }: { onClose: () => void; onDone: () => voi
         try {
           const res = await api<{ user: User; tempPassword?: string }>("/admin/users", {
             method: "POST",
-            body: { name: f.name.trim(), email: f.email.trim().toLowerCase(), phone: f.phone.trim() || undefined, role: "ADMIN_STAFF", password: f.password || undefined },
+            body: { name: f.name.trim(), email: f.email.trim().toLowerCase(), phone: f.phone.trim() || undefined, role: f.role, password: f.password || undefined },
           });
-          toast.success("Staff member created");
+          toast.success(f.role === "BLOG_EDITOR" ? "Blog writer created" : "Staff member created");
           onDone();
           if (res.tempPassword) setTemp(res.tempPassword);
           else onClose();
@@ -170,6 +173,12 @@ function StaffForm({ onClose, onDone }: { onClose: () => void; onDone: () => voi
         }
       }}
     >
+      <Field label="Access" hint={f.role === "BLOG_EDITOR" ? "Can write, upload images for and publish blog posts only. No access to bookings, partners or money." : "Full admin panel access (except super-admin only actions)."}>
+        <Select value={f.role} onChange={(e) => setF({ ...f, role: e.target.value as typeof f.role })}>
+          <option value="ADMIN_STAFF">Admin staff</option>
+          <option value="BLOG_EDITOR">Blog writer (blog only)</option>
+        </Select>
+      </Field>
       <Field label="Name" required error={touched ? errs.name : null}>
         <Input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
       </Field>
@@ -187,7 +196,7 @@ function StaffForm({ onClose, onDone }: { onClose: () => void; onDone: () => voi
           Cancel
         </Button>
         <Button type="submit" loading={busy}>
-          Create staff
+          {f.role === "BLOG_EDITOR" ? "Create blog writer" : "Create staff"}
         </Button>
       </div>
     </form>

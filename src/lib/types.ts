@@ -1,7 +1,7 @@
 // DTOs returned by the BookMeStays API. Contract: /docs/API_CONTRACT.md
 // Money = integer paise. Percent-like values = basis points. Stay dates = "YYYY-MM-DD".
 
-export type Role = "SUPER_ADMIN" | "ADMIN_STAFF" | "PARTNER_OWNER" | "PARTNER_STAFF" | "CUSTOMER";
+export type Role = "SUPER_ADMIN" | "ADMIN_STAFF" | "PARTNER_OWNER" | "PARTNER_STAFF" | "CUSTOMER" | "BLOG_EDITOR";
 export type PropertyType = "HOTEL" | "VILLA" | "FARMHOUSE" | "HOMESTAY" | "HERITAGE";
 export type TravelTag = "CORPORATE" | "FAMILY" | "COUPLES" | "FRIENDS";
 export type PropertyStatus = "DRAFT" | "PENDING_REVIEW" | "LIVE" | "REJECTED" | "SUSPENDED";
@@ -17,7 +17,7 @@ export type PayoutStatus =
   | "READY_TO_SETUP"
   | "PENDING_ACTIVATION"
   | "ACTIVE";
-export type MediaOwnerType = "PROPERTY" | "ROOM_TYPE" | "NEARBY_PLACE" | "EXPERIENCE" | "CITY" | "COLLECTION" | "BANNER" | "TESTIMONIAL";
+export type MediaOwnerType = "PROPERTY" | "ROOM_TYPE" | "NEARBY_PLACE" | "EXPERIENCE" | "CITY" | "COLLECTION" | "BANNER" | "TESTIMONIAL" | "BLOG";
 export type MediaKind = "IMAGE" | "VIDEO";
 export type MediaTag =
   | "EXTERIOR" | "ROOM_WALKTHROUGH" | "ROOM" | "BATHROOM" | "VIEW" | "COMMON_AREA"
@@ -34,6 +34,46 @@ export type HomeSectionType =
 
 export type Paginated<T> = { items: T[]; total: number; page: number; limit: number; totalPages: number };
 export type Seo = { title?: string; description?: string; keywords?: string[]; ogImage?: string };
+// ─── Blog ─────────────────────────────────────────────────────────────────────
+export type BlogStatus = "DRAFT" | "PUBLISHED";
+export type BlogCard = {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  coverImageUrl: string | null;
+  coverImageAlt: string | null;
+  category: string | null;
+  categorySlug: string | null;
+  tags: string[];
+  authorName: string | null;
+  readingMinutes: number;
+  isFeatured: boolean;
+  publishedAt: string | null;
+  updatedAt: string;
+};
+export type BlogPostDetail = BlogCard & {
+  content: string;
+  city: { name: string; slug: string } | null;
+  seo: Seo | null;
+  related: BlogCard[];
+};
+/** /public/blog/:slug answers this for an old slug of a renamed post. */
+export type BlogRedirect = { redirect: string };
+export type BlogCategory = { name: string; slug: string; count: number };
+export type BlogSitemapEntry = { slug: string; title: string; categorySlug: string | null; coverImageUrl: string | null; publishedAt: string | null; updatedAt: string };
+export type AdminBlogPost = Omit<BlogCard, "excerpt"> & {
+  excerpt: string | null;
+  content: string;
+  status: BlogStatus;
+  previousSlugs: string[];
+  cityId: string | null;
+  cityName: string | null;
+  authorId: string | null;
+  seo: Seo | null;
+  createdAt: string;
+};
+
 export type CancellationPolicy = { summary: string; rules: { hoursBeforeCheckIn: number; refundPercent: number }[] };
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
